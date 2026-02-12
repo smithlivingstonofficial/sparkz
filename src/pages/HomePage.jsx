@@ -20,7 +20,7 @@ const HomePage = () => {
 
       {/* Footer */}
       <footer className="w-full bg-black text-center p-10 text-xs text-white/20 font-mono border-t border-white/10">
-        SPARKZ 2026 // END OF REEL // KALASALINGAM ACADEMY
+        SPARKZ 2026 // END OF REEL // KALASALINGAM ACADEMY OF RESEARCH AND EDUCATION
       </footer>
     </>
   );
