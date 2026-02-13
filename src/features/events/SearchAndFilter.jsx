@@ -203,7 +203,7 @@ const EventsSearchAndFilter = ({
             animate={{ y: 0 }}
             exit={{ y: "100%" }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="fixed inset-0 z-[100] bg-[#050505] flex flex-col"
+            className="fixed inset-0 z-[100] bg-[#050505] flex flex-col top-15"
           >
             {/* 1. Modal Header */}
             <div className="flex justify-between items-center px-6 py-5 border-b border-white/10 bg-[#0a0a0a]">
@@ -274,7 +274,7 @@ const EventsSearchAndFilter = ({
             </div>
 
             {/* 3. Modal Footer (Fixed Bottom) */}
-            <div className="absolute bottom-0 left-0 right-0 p-5 bg-[#0a0a0a]/90 backdrop-blur-xl border-t border-white/10 pb-safe">
+            <div className="absolute bottom-25 left-0 right-0 p-5 bg-[#0a0a0a]/90 backdrop-blur-xl border-t border-white/10 pb-safe">
               <div className="flex gap-4">
                 <button 
                   onClick={handleClearAll}
