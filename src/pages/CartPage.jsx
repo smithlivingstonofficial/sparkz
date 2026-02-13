@@ -37,7 +37,7 @@ const CartPage = () => {
   const [formError, setFormError] = useState('');
   const fileInputRef = useRef(null);
 
-  const sparkzUPI = 'smithlivingston2005@okhdfcbank';
+  const sparkzUPI = 'kvbupiqr.105000000014533@kvb';
 
   // --- Logic: Pricing & Student Check ---
   const isKluStudent = useMemo(() => user?.email?.toLowerCase().endsWith('@klu.ac.in'), [user]);
