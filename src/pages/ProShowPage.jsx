@@ -329,9 +329,9 @@ const ProShowPage = () => {
               <div className="relative transform md:scale-105 z-10">
                 <TicketCard 
                   type="vip" 
-                  price="300" 
+                  price="500" 
                   popular={true}
-                  features={['Priority Front Row Access', 'Meet & Greet Chance', 'Exclusive Merch Kit', 'Fast Track Entry']} 
+                  features={['Priority Front Row Access', 'Fast Track Entry']} 
                   color="from-amber-600 to-red-600"
                   onClick={() => handleRegister('vip')}
                   loading={registering === 'vip'}
