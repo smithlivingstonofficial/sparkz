@@ -1,7 +1,9 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import Lenis from '@studio-freight/lenis';
 
 export default function SmoothScrollWrapper({ children }) {
+  const lenisRef = useRef(null);
+
   useEffect(() => {
     const lenis = new Lenis({
       duration: 1.2,
@@ -13,6 +15,8 @@ export default function SmoothScrollWrapper({ children }) {
       touchMultiplier: 2,
     });
 
+    lenisRef.current = lenis;
+
     function raf(time) {
       lenis.raf(time);
       requestAnimationFrame(raf);
@@ -20,7 +24,19 @@ export default function SmoothScrollWrapper({ children }) {
 
     requestAnimationFrame(raf);
 
+    // FIX: Listen for body scroll changes
+    const observer = new MutationObserver(() => {
+      if (document.body.style.overflow === 'hidden') {
+        lenis.stop();
+      } else {
+        lenis.start();
+      }
+    });
+
+    observer.observe(document.body, { attributes: true, attributeFilter: ['style'] });
+
     return () => {
+      observer.disconnect();
       lenis.destroy();
     };
   }, []);

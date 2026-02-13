@@ -265,15 +265,15 @@ const CartPage = () => {
                 <Sparkles size={32} />
               </div>
               <h2 className="text-2xl font-black uppercase italic tracking-tighter mb-4">Wait, Star!</h2>
-              <p className="text-gray-400 text-sm leading-relaxed mb-8 uppercase tracking-tight">
+              <p className="text-gray-400 text-lm leading-relaxed mb-8 uppercase tracking-tight">
                 You haven't selected the <span className="text-amber-500 font-bold">VIP Add-ons</span>. Would you like to add Pro Show access or Campus Stay before you pay?
               </p>
 
               <div className="grid gap-3">
-                <button onClick={openPayment} className="w-full py-4 bg-white text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-gray-200 transition-all">
+                <button onClick={openPayment} className="w-full py-4 bg-white text-black font-black uppercase tracking-widest text-[15px] rounded-xl hover:bg-gray-200 transition-all">
                   No, proceed to pay ₹{totals.total}
                 </button>
-                <button onClick={() => setShowReminder(false)} className="w-full py-4 bg-amber-500 text-black font-black uppercase tracking-widest text-[10px] rounded-xl hover:bg-amber-400 transition-all">
+                <button onClick={() => setShowReminder(false)} className="w-full py-4 bg-amber-500 text-black font-black uppercase tracking-widest text-[16px] rounded-xl hover:bg-amber-400 transition-all">
                   Wait, let me add them
                 </button>
               </div>
@@ -285,7 +285,7 @@ const CartPage = () => {
       {/* --- MODAL 2: PAYMENT FORM --- */}
       <AnimatePresence>
         {showCheckoutForm && (
-          <div className="fixed inset-0 z-[110] flex items-center justify-center p-4">
+          <div data-lenis-prevent className="fixed inset-0 z-[110] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="absolute inset-0 bg-black/95 backdrop-blur-xl" />
             <motion.div initial={{ scale: 0.9, y: 50 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 50 }}
               className="relative bg-[#0a0a0a] border border-white/10 w-full max-w-lg rounded-[3rem] overflow-hidden shadow-2xl flex flex-col max-h-[90vh]"
