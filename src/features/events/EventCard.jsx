@@ -199,7 +199,7 @@ const EventCard = ({
                 >
                   <div className="flex items-center gap-1">
                     <Crown className="w-3 h-3 text-white" />
-                    <span className="text-white text-xs font-bold">FEATURED</span>
+                    <span className="text-white text-xs font-bold">FLAGSHIP</span>
                   </div>
                 </motion.div>
               )}

@@ -49,7 +49,7 @@ const LeadersSlider = () => {
     },
     {
       id: 5,
-      name: 'Mr. S. Arjun',
+      name: 'Mr. S. Arjun Kalasalingam',
       honorific: '',
       role: 'Vice President',
       image: 'https://www.kalasalingam.ac.in/wp-content/uploads/2021/04/Arjun-Sir-1-modified-1.png',

@@ -211,7 +211,7 @@ const AppLayout = ({ children }) => {
             <Link to="/" className="flex items-center gap-4 group">
               <div className="relative h-10 w-auto">
                 <img 
-                  src="/kare.png" 
+                  src="https://www.kalasalingam.ac.in/wp-content/uploads/2022/02/Logo.png" 
                   alt="SPARKZ Logo" 
                   className="h-full w-auto object-contain drop-shadow-[0_0_10px_rgba(251,191,36,0.3)] transition-transform group-hover:scale-105"
                 />

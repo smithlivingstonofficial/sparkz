@@ -1,11 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Search, Filter, X, ChevronDown, ChevronUp, 
-  Music, Theater, Palette, BookOpen, Camera,
-  Video, Film, Trophy, Gamepad2, Utensils, Globe,
-  ChefHat, Users, Award, Check, Sparkles, 
-  Calendar, Clock, TrendingUp, Zap, Star, Home
+  Search, Filter, X, ChevronDown, Check, Star, Calendar, 
+  SortAsc, TrendingUp, Home, Wifi, MapPin, Globe
 } from 'lucide-react';
 
 const EventsSearchAndFilter = ({
@@ -13,626 +10,279 @@ const EventsSearchAndFilter = ({
   setSearchQuery,
   activeCategory,
   setActiveCategory,
-  showFilter,
-  setShowFilter,
-  events = [], // Pass events data to extract categories
-  isMobile,
-  clearSearch
+  sortBy,         // ADDED: Current sort state from parent
+  setSortBy,      // ADDED: Function to update sort state in parent
+  eventType,      // ADDED: Current event type filter (all, online, offline)
+  setEventType,   // ADDED: Function to update event type
+  events = [],
 }) => {
   const [showMobileFilter, setShowMobileFilter] = useState(false);
-  const [showSortOptions, setShowSortOptions] = useState(false);
-  const [sortBy, setSortBy] = useState('featured');
   const [categories, setCategories] = useState([]);
-  const [eventCount, setEventCount] = useState(0);
 
-  // Extract unique categories from events data
+  // --- DERIVE CATEGORIES FROM EVENTS ---
   useEffect(() => {
     if (events && events.length > 0) {
-      const categoryMap = {};
-      
-      // Count events per category
+      const categoryMap = new Map();
       events.forEach(event => {
-        const category = event.category?.toLowerCase() || 'other';
-        if (!categoryMap[category]) {
-          categoryMap[category] = {
-            id: category,
-            name: category,
-            count: 0,
-            events: []
-          };
-        }
-        categoryMap[category].count += 1;
-        categoryMap[category].events.push(event);
+        const cat = event.category?.toLowerCase() || 'other';
+        categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
       });
 
-      // Convert to array and sort by count
-      const categoryArray = Object.values(categoryMap);
-      categoryArray.sort((a, b) => b.count - a.count);
+      const uniqueCategories = Array.from(categoryMap.keys()).map(cat => ({
+        id: cat,
+        label: cat.charAt(0).toUpperCase() + cat.slice(1),
+        count: categoryMap.get(cat)
+      }));
+
+      const specialCategories = [
+        { id: 'all', label: 'All Events', count: events.length, icon: Home },
+        { id: 'featured', label: 'Featured', count: events.filter(e => e.featured).length, icon: Star }
+      ];
       
-      // Add "All" category at the beginning
-      const allCategory = {
-        id: 'all',
-        name: 'All',
-        label: 'All Events',
-        count: events.length,
-        icon: Home,
-        color: 'from-gray-600 to-gray-800'
-      };
-      
-      setCategories([allCategory, ...categoryArray.map(cat => ({
-        ...cat,
-        label: cat.name.charAt(0).toUpperCase() + cat.name.slice(1),
-        ...getCategoryProperties(cat.name)
-      }))]);
-      
-      setEventCount(events.length);
+      setCategories([...specialCategories, ...uniqueCategories]);
     }
   }, [events]);
 
-  // Get icon, color, and gradient for each category
-  const getCategoryProperties = (categoryName) => {
-    const category = categoryName.toLowerCase();
-    
-    const properties = {
-      // Existing categories from your JSON
-      dance: {
-        icon: Music,
-        gradient: 'from-purple-600 to-pink-600',
-        color: 'purple',
-        bg: 'bg-purple-500/10',
-        text: 'text-purple-400',
-        border: 'border-purple-500/30'
-      },
-      gaming: {
-        icon: Gamepad2,
-        gradient: 'from-green-600 to-emerald-600',
-        color: 'green',
-        bg: 'bg-green-500/10',
-        text: 'text-green-400',
-        border: 'border-green-500/30'
-      },
-      cooking: {
-        icon: ChefHat,
-        gradient: 'from-yellow-600 to-orange-600',
-        color: 'yellow',
-        bg: 'bg-yellow-500/10',
-        text: 'text-yellow-400',
-        border: 'border-yellow-500/30'
-      },
-      tourism: {
-        icon: Globe,
-        gradient: 'from-blue-600 to-cyan-600',
-        color: 'blue',
-        bg: 'bg-blue-500/10',
-        text: 'text-blue-400',
-        border: 'border-blue-500/30'
-      },
-      // Additional common categories
-      music: {
-        icon: Music,
-        gradient: 'from-purple-600 to-pink-600',
-        color: 'purple',
-        bg: 'bg-purple-500/10',
-        text: 'text-purple-400',
-        border: 'border-purple-500/30'
-      },
-      drama: {
-        icon: Theater,
-        gradient: 'from-red-600 to-rose-600',
-        color: 'red',
-        bg: 'bg-red-500/10',
-        text: 'text-red-400',
-        border: 'border-red-500/30'
-      },
-      arts: {
-        icon: Palette,
-        gradient: 'from-green-600 to-emerald-600',
-        color: 'green',
-        bg: 'bg-green-500/10',
-        text: 'text-green-400',
-        border: 'border-green-500/30'
-      },
-      literary: {
-        icon: BookOpen,
-        gradient: 'from-blue-600 to-cyan-600',
-        color: 'blue',
-        bg: 'bg-blue-500/10',
-        text: 'text-blue-400',
-        border: 'border-blue-500/30'
-      },
-      photo: {
-        icon: Camera,
-        gradient: 'from-cyan-600 to-teal-600',
-        color: 'cyan',
-        bg: 'bg-cyan-500/10',
-        text: 'text-cyan-400',
-        border: 'border-cyan-500/30'
-      },
-      film: {
-        icon: Film,
-        gradient: 'from-amber-600 to-orange-600',
-        color: 'amber',
-        bg: 'bg-amber-500/10',
-        text: 'text-amber-400',
-        border: 'border-amber-500/30'
-      },
-      sports: {
-        icon: Trophy,
-        gradient: 'from-orange-600 to-red-600',
-        color: 'orange',
-        bg: 'bg-orange-500/10',
-        text: 'text-orange-400',
-        border: 'border-orange-500/30'
-      },
-      // Default for unknown categories
-      default: {
-        icon: Star,
-        gradient: 'from-gray-600 to-gray-800',
-        color: 'gray',
-        bg: 'bg-gray-500/10',
-        text: 'text-gray-400',
-        border: 'border-gray-500/30'
-      }
-    };
-
-    return properties[category] || properties.default;
-  };
-
-  // Sort options
+  // --- FILTER & SORT OPTIONS ---
   const sortOptions = [
-    { id: 'featured', label: 'Featured', icon: Star },
-    { id: 'date', label: 'Date', icon: Calendar },
-    { id: 'name', label: 'Name (A-Z)', icon: BookOpen },
-    { id: 'popularity', label: 'Most Popular', icon: TrendingUp },
+    { id: 'featured', label: 'Featured First', icon: Star },
+    { id: 'day1', label: 'Day 1', icon: Calendar },
+    { id: 'day2', label: 'Day 2', icon: Calendar },
+    { id: 'name_asc', label: 'Name (A-Z)', icon: SortAsc },
+    { id: 'popularity', label: 'Popularity', icon: TrendingUp },
+  ];
+  
+  const eventTypeOptions = [
+    { id: 'all', label: 'All Types', icon: Globe },
+    { id: 'online', label: 'Online', icon: Wifi },
+    { id: 'offline', label: 'Offline', icon: MapPin },
   ];
 
-  // Animation variants
-  const filterVariants = {
-    hidden: { opacity: 0, y: -20 },
-    visible: { opacity: 1, y: 0 },
-    exit: { opacity: 0, y: -20 }
-  };
-
-  const chipVariants = {
-    hidden: { scale: 0.8, opacity: 0 },
-    visible: { scale: 1, opacity: 1 },
-    hover: { scale: 1.05 },
-    tap: { scale: 0.95 }
-  };
-
-  // Handle search with debouncing
-  const handleSearch = (e) => {
-    setSearchQuery(e.target.value);
-  };
-
-  // Clear all filters
   const handleClearAll = () => {
     setSearchQuery('');
     setActiveCategory('all');
+    setSortBy('featured');
+    setEventType('all'); // Reset event type filter
   };
 
-  // Get filtered event count
-  const getFilteredEventCount = () => {
-    if (!events) return 0;
-    
-    let filtered = events;
-    
-    // Filter by search query
-    if (searchQuery) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(event => 
-        event.title.toLowerCase().includes(query) ||
-        event.description.toLowerCase().includes(query) ||
-        event.category.toLowerCase().includes(query) ||
-        event.tagline.toLowerCase().includes(query)
-      );
-    }
-    
-    // Filter by category
-    if (activeCategory !== 'all') {
-      filtered = filtered.filter(event => 
-        event.category.toLowerCase() === activeCategory
-      );
-    }
-    
-    return filtered.length;
-  };
+  const getActiveLabel = (options, activeId) => options.find(opt => opt.id === activeId)?.label || '';
 
   return (
-    <div className="w-full">
-      {/* Results Counter - Desktop */}
-      {!isMobile && (
-        <motion.div
-          initial={{ opacity: 0, y: -20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-6 flex items-center justify-between"
-        >
-          <div className="flex items-center gap-3">
-            <div className="px-3 py-1.5 bg-gradient-to-r from-amber-600/20 to-red-600/20 backdrop-blur-sm rounded-lg border border-amber-500/30">
-              <span className="text-amber-300 text-sm font-medium">
-                Showing <span className="font-bold text-white">{getFilteredEventCount()}</span> of {eventCount} Events
-              </span>
-            </div>
-            
-            {(searchQuery || activeCategory !== 'all') && (
-              <motion.button
-                initial={{ scale: 0 }}
-                animate={{ scale: 1 }}
-                onClick={handleClearAll}
-                className="flex items-center gap-2 px-3 py-1.5 bg-gradient-to-r from-red-600/20 to-amber-600/20 backdrop-blur-sm rounded-lg border border-red-500/30 hover:border-amber-500/50 transition-all hover:scale-105"
+    <div className="w-full text-white">
+      {/* --- MAIN SEARCH BAR --- */}
+      <div className="relative mb-6">
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={20} />
+        <input
+          type="text"
+          placeholder="Search for events, artists, or categories..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="w-full pl-12 pr-10 py-4 bg-black/40 backdrop-blur-md border border-white/10 rounded-xl placeholder-gray-500 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all"
+        />
+        {searchQuery && (
+          <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-white/10"><X size={16} /></button>
+        )}
+      </div>
+
+      {/* --- DESKTOP FILTERS --- */}
+      <div className="hidden md:block space-y-6 mb-8">
+        {/* Event Type Filter */}
+        <div className="flex items-center gap-4">
+          <h3 className="text-sm font-semibold text-gray-400 w-24">Type:</h3>
+          <div className="flex flex-wrap gap-2">
+            {eventTypeOptions.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setEventType(id)}
+                className={`px-4 py-2 text-sm font-semibold rounded-full transition-all duration-300 flex items-center gap-2 border ${
+                  eventType === id 
+                    ? 'bg-blue-500 text-white border-blue-500' 
+                    : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'
+                }`}
               >
-                <X className="w-3 h-3 text-red-400" />
-                <span className="text-white text-sm">Clear All</span>
-              </motion.button>
-            )}
+                <Icon size={14} />
+                {label}
+              </button>
+            ))}
           </div>
+        </div>
 
-          {/* Sort Options */}
-          <div className="relative">
-            {/* <button
-              onClick={() => setShowSortOptions(!showSortOptions)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-black/40 backdrop-blur-sm rounded-lg border border-gray-700 hover:border-amber-500/50 transition-all"
-            >
-              <Star className="w-4 h-4 text-amber-400" />
-              <span className="text-white text-sm">
-                Sort: {sortOptions.find(s => s.id === sortBy)?.label}
-              </span>
-              {showSortOptions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button> */}
+        {/* Category Filter */}
+        <div className="flex items-center gap-4">
+          <h3 className="text-sm font-semibold text-gray-400 w-24">Category:</h3>
+          <div className="flex flex-wrap gap-2">
+            {categories.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                onClick={() => setActiveCategory(id)}
+                className={`px-4 py-2 text-sm font-semibold rounded-full transition-all duration-300 flex items-center gap-2 border ${
+                  activeCategory === id 
+                    ? 'bg-amber-500 text-black border-amber-500' 
+                    : 'bg-white/5 text-gray-300 border-white/10 hover:bg-white/10 hover:border-white/20'
+                }`}
+              >
+                {Icon && <Icon size={14} />}
+                {label}
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+      
+      {/* --- MOBILE FILTER BUTTON & DESKTOP SORT --- */}
+      <div className="flex justify-between items-center gap-4 mb-8">
+        <button 
+          onClick={() => setShowMobileFilter(true)}
+          className="w-full md:hidden flex items-center justify-center gap-2 py-3 bg-white/5 border border-white/10 rounded-lg"
+        >
+          <Filter size={16} className="text-amber-400" />
+          Filter & Sort
+        </button>
 
+        <div className="hidden md:block relative ml-auto">
+          <Menu as="div" className="relative">
+            <Menu.Button className="flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg hover:bg-white/10">
+              <span className="text-sm text-gray-400">Sort by:</span>
+              <span className="font-semibold">{getActiveLabel(sortOptions, sortBy)}</span>
+              <ChevronDown size={16} />
+            </Menu.Button>
             <AnimatePresence>
-              {showSortOptions && (
-                <motion.div
-                  variants={filterVariants}
-                  initial="hidden"
-                  animate="visible"
-                  exit="exit"
-                  className="absolute right-0 top-full mt-2 w-48 bg-gray-900/95 backdrop-blur-xl rounded-xl border border-gray-800 shadow-2xl z-50"
-                >
-                  {sortOptions.map((option) => {
-                    const Icon = option.icon;
-                    return (
+              <Menu.Items as={motion.div}
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="absolute right-0 mt-2 w-56 origin-top-right bg-gray-900/90 backdrop-blur-xl border border-white/10 rounded-lg shadow-2xl z-50 focus:outline-none p-2"
+              >
+                {sortOptions.map(({ id, label, icon: Icon }) => (
+                  <Menu.Item key={id}>
+                    {({ active }) => (
                       <button
-                        key={option.id}
-                        onClick={() => {
-                          setSortBy(option.id);
-                          setShowSortOptions(false);
-                        }}
-                        className={`w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-800/50 transition-all ${
-                          sortBy === option.id ? 'bg-amber-900/20 text-amber-400' : 'text-gray-300'
+                        onClick={() => setSortBy(id)}
+                        className={`w-full text-left px-4 py-2 rounded-md text-sm flex items-center gap-3 transition-colors ${
+                          active ? 'bg-amber-500/20 text-amber-300' : 'text-gray-300'
                         }`}
                       >
-                        <Icon className="w-4 h-4" />
-                        <span className="flex-1 text-sm">{option.label}</span>
-                        {sortBy === option.id && <Check className="w-4 h-4 text-amber-400" />}
+                        <Icon size={16} />
+                        {label}
+                        {sortBy === id && <Check size={16} className="ml-auto text-amber-400" />}
                       </button>
-                    );
-                  })}
-                </motion.div>
-              )}
+                    )}
+                  </Menu.Item>
+                ))}
+              </Menu.Items>
             </AnimatePresence>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Main Search Bar - Desktop */}
-      {!isMobile && (
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="relative mb-8"
-        >
-          <div className="relative group">
-            {/* Glow effect */}
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-600/20 to-red-600/20 rounded-xl blur opacity-0 group-hover:opacity-50 transition duration-500"></div>
-            
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-amber-400/60" size={20} />
-              <input
-                type="text"
-                placeholder="Search events by name, category, or description..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="w-full pl-12 pr-12 py-4 bg-black/60 backdrop-blur-sm border border-gray-800 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50 focus:ring-1 focus:ring-amber-500/30 transition-all"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-4 top-1/2 transform -translate-y-1/2 p-1.5 bg-gray-800/50 rounded-full hover:bg-gray-700/50 transition-all"
-                >
-                  <X className="w-4 h-4 text-gray-400 hover:text-white" />
-                </button>
-              )}
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* Category Filter Chips - Desktop */}
-      {!isMobile && categories.length > 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="mb-10"
-        >
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="text-white font-bold text-lg flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-amber-400" />
-              Browse by Category
-            </h3>
-            <div className="text-gray-400 text-sm">
-              {categories.length - 1} categories available
-            </div>
-          </div>
-
-          <div className="flex flex-wrap justify-center gap-3">
-            {categories.map((category) => {
-              const Icon = category.icon || Star;
-              const isActive = activeCategory === category.id;
-
-              return (
-                <motion.button
-                  key={category.id}
-                  variants={chipVariants}
-                  initial="hidden"
-                  animate="visible"
-                  whileHover="hover"
-                  whileTap="tap"
-                  onClick={() => setActiveCategory(category.id)}
-                  className={`relative group px-5 py-3 rounded-full border transition-all duration-300 flex items-center gap-3 ${
-                    isActive
-                      ? `bg-gradient-to-r ${category.gradient} text-white border-transparent shadow-2xl`
-                      : 'bg-black/40 backdrop-blur-sm text-gray-300 border-gray-700 hover:text-white hover:border-gray-600'
-                  }`}
-                >
-                  {/* Hover effect */}
-                  <div className="absolute inset-0 bg-gradient-to-r from-amber-500/0 via-amber-500/5 to-red-500/0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-
-                  {/* Icon */}
-                  <div className={`p-2 rounded-full ${
-                    isActive 
-                      ? 'bg-white/20' 
-                      : 'bg-gray-800/50 group-hover:bg-gray-700/50'
-                  }`}>
-                    <Icon className={`w-4 h-4 ${isActive ? 'text-white' : 'text-gray-400 group-hover:text-white'}`} />
-                  </div>
-
-                  {/* Label */}
-                  <span className="font-medium text-sm md:text-base">
-                    {category.label}
-                  </span>
-
-                  {/* Count */}
-                  <span className={`px-2 py-1 rounded-full text-xs ${
-                    isActive
-                      ? 'bg-white/20 text-white'
-                      : 'bg-gray-800/50 text-gray-400 group-hover:text-white'
-                  }`}>
-                    {category.count}
-                  </span>
-
-                  {/* Active indicator */}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeCategory"
-                      className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/30 to-red-500/30 rounded-full -z-10"
-                    />
-                  )}
-
-                  {/* Pulse effect for active */}
-                  {isActive && (
-                    <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/10 to-red-500/10 rounded-full animate-ping"></div>
-                  )}
-                </motion.button>
-              );
-            })}
-          </div>
-        </motion.div>
-      )}
-
-      {/* Mobile Layout */}
-      {isMobile && (
-        <div className="mb-6 space-y-4">
-          {/* Search Bar */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="relative"
-          >
-            <div className="relative">
-              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-amber-400/60" size={18} />
-              <input
-                type="text"
-                placeholder="Search events..."
-                value={searchQuery}
-                onChange={handleSearch}
-                className="w-full pl-12 pr-10 py-3 bg-black/60 backdrop-blur-sm border border-gray-800 rounded-xl text-white placeholder-gray-400 focus:outline-none focus:border-amber-500/50 transition-all"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1.5 bg-gray-800/50 rounded-full"
-                >
-                  <X className="w-4 h-4 text-gray-400" />
-                </button>
-              )}
-            </div>
-          </motion.div>
-
-          {/* Results Counter and Filter Button */}
-          <div className="flex items-center justify-between">
-            {/* Results Counter */}
-            <div className="flex items-center gap-2">
-              <div className="px-3 py-1.5 bg-gradient-to-r from-amber-600/20 to-red-600/20 backdrop-blur-sm rounded-lg border border-amber-500/30">
-                <span className="text-amber-300 text-xs font-medium">
-                  {getFilteredEventCount()} Events
-                </span>
-              </div>
-              
-              {(searchQuery || activeCategory !== 'all') && (
-                <motion.button
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  onClick={handleClearAll}
-                  className="flex items-center gap-1 px-2 py-1.5 bg-gradient-to-r from-red-600/20 to-amber-600/20 backdrop-blur-sm rounded-lg border border-red-500/30 hover:border-amber-500/50"
-                >
-                  <X className="w-3 h-3 text-red-400" />
-                  <span className="text-white text-xs">Clear</span>
-                </motion.button>
-              )}
-            </div>
-
-            {/* Filter Button */}
-            <button
-              onClick={() => setShowMobileFilter(!showMobileFilter)}
-              className="flex items-center gap-2 px-4 py-2.5 bg-black/40 backdrop-blur-sm rounded-xl border border-gray-700 hover:border-amber-500/50 transition-all"
-            >
-              <Filter className="w-4 h-4 text-amber-400" />
-              <span className="text-white text-sm">Filter</span>
-              {showMobileFilter ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-            </button>
-          </div>
-
-          {/* Active Category Display */}
-          {activeCategory !== 'all' && categories.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="px-4 py-3 bg-gradient-to-r from-amber-900/30 to-red-900/30 backdrop-blur-sm rounded-xl border border-amber-500/30"
-            >
-              <div className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-amber-500/20 rounded-lg">
-                    {(() => {
-                      const category = categories.find(c => c.id === activeCategory);
-                      const Icon = category?.icon || Star;
-                      return <Icon className="w-4 h-4 text-amber-400" />;
-                    })()}
-                  </div>
-                  <div>
-                    <div className="text-white text-sm font-medium">Active Filter</div>
-                    <div className="text-amber-300 font-bold">
-                      {categories.find(c => c.id === activeCategory)?.label || ''}
-                    </div>
-                  </div>
-                </div>
-                <div className="text-amber-400 text-sm font-bold">
-                  {categories.find(c => c.id === activeCategory)?.count || 0} events
-                </div>
-              </div>
-            </motion.div>
-          )}
-
-          {/* Mobile Filter Dropdown */}
-          <AnimatePresence>
-            {showMobileFilter && categories.length > 0 && (
-              <motion.div
-                variants={filterVariants}
-                initial="hidden"
-                animate="visible"
-                exit="exit"
-                className="overflow-hidden"
-              >
-                <div className="bg-gray-900/95 backdrop-blur-xl rounded-xl border border-gray-800 p-4 space-y-4">
-                  {/* Categories Section */}
-                  <div>
-                    <h4 className="text-white font-semibold mb-3 text-sm">Categories</h4>
-                    <div className="grid grid-cols-2 gap-2">
-                      {categories.map((category) => {
-                        const Icon = category.icon || Star;
-                        const isActive = activeCategory === category.id;
-
-                        return (
-                          <button
-                            key={category.id}
-                            onClick={() => {
-                              setActiveCategory(category.id);
-                              setShowMobileFilter(false);
-                            }}
-                            className={`p-3 rounded-lg border transition-all flex flex-col items-center gap-2 ${
-                              isActive
-                                ? `bg-gradient-to-r ${category.gradient} text-white border-transparent`
-                                : 'bg-black/40 text-gray-300 border-gray-700 hover:text-white'
-                            }`}
-                          >
-                            <Icon className="w-5 h-5" />
-                            <span className="text-xs font-medium text-center">
-                              {category.label}
-                            </span>
-                            <span className="text-xs opacity-70">({category.count})</span>
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Sort Options */}
-                  <div>
-                    <h4 className="text-white font-semibold mb-3 text-sm">Sort By</h4>
-                    <div className="space-y-2">
-                      {sortOptions.map((option) => {
-                        const Icon = option.icon;
-                        return (
-                          <button
-                            key={option.id}
-                            onClick={() => {
-                              setSortBy(option.id);
-                              setShowMobileFilter(false);
-                            }}
-                            className={`w-full flex items-center justify-between p-3 rounded-lg border transition-all ${
-                              sortBy === option.id
-                                ? 'bg-amber-900/20 text-amber-400 border-amber-500/30'
-                                : 'bg-black/40 text-gray-300 border-gray-700 hover:text-white'
-                            }`}
-                          >
-                            <div className="flex items-center gap-3">
-                              <Icon className="w-4 h-4" />
-                              <span className="text-sm">{option.label}</span>
-                            </div>
-                            {sortBy === option.id && <Check className="w-4 h-4 text-amber-400" />}
-                          </button>
-                        );
-                      })}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+          </Menu>
+        </div>
+      </div>
+      
+      {/* --- ACTIVE FILTERS DISPLAY --- */}
+      {(searchQuery || activeCategory !== 'all' || sortBy !== 'featured' || eventType !== 'all') && (
+        <div className="mb-8 flex flex-wrap items-center gap-3 p-4 bg-black/50 backdrop-blur-md rounded-lg border border-white/5">
+          <span className="text-sm font-semibold text-gray-400">Active:</span>
+          {searchQuery && <span className="px-3 py-1 bg-white/10 rounded-full text-xs">Search: "{searchQuery}"</span>}
+          {eventType !== 'all' && <span className="px-3 py-1 bg-white/10 rounded-full text-xs">Type: {getActiveLabel(eventTypeOptions, eventType)}</span>}
+          {activeCategory !== 'all' && <span className="px-3 py-1 bg-white/10 rounded-full text-xs">Category: {getActiveLabel(categories, activeCategory)}</span>}
+          {sortBy !== 'featured' && <span className="px-3 py-1 bg-white/10 rounded-full text-xs">Sort: {getActiveLabel(sortOptions, sortBy)}</span>}
+          <button onClick={handleClearAll} className="ml-auto text-xs text-red-400 hover:text-red-300 flex items-center gap-1">
+            <X size={14} /> Clear All
+          </button>
         </div>
       )}
 
-      {/* Custom Styles */}
-      <style jsx>{`
-        /* Custom scrollbar for dropdowns */
-        .scrollbar-thin::-webkit-scrollbar {
-          width: 4px;
-        }
-        
-        .scrollbar-thin::-webkit-scrollbar-track {
-          background: rgba(255, 255, 255, 0.1);
-          border-radius: 4px;
-        }
-        
-        .scrollbar-thin::-webkit-scrollbar-thumb {
-          background: rgba(245, 158, 11, 0.5);
-          border-radius: 4px;
-        }
-        
-        /* Smooth transitions */
-        .transition-all {
-          transition-property: all;
-          transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
-          transition-duration: 300ms;
-        }
-        
-        /* Glass effect */
-        .backdrop-blur-sm {
-          backdrop-filter: blur(8px);
-        }
-      `}</style>
+      {/* --- MOBILE FILTER & SORT MODAL --- */}
+      <AnimatePresence>
+        {showMobileFilter && (
+          <motion.div
+            initial={{ y: "100%" }}
+            animate={{ y: 0 }}
+            exit={{ y: "100%" }}
+            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+            className="fixed inset-0 z-50 bg-gray-900/80 backdrop-blur-xl p-4 flex flex-col"
+          >
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-2xl font-bold">Filter & Sort</h2>
+              <button onClick={() => setShowMobileFilter(false)} className="p-2 rounded-full hover:bg-white/10"><X /></button>
+            </div>
+            
+            <div className="flex-1 overflow-y-auto space-y-8">
+              {/* Event Type */}
+              <div>
+                <h3 className="font-semibold mb-4">Event Type</h3>
+                <div className="flex flex-wrap gap-2">
+                  {eventTypeOptions.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => setEventType(id)}
+                      className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 border transition-colors ${
+                        eventType === id ? 'bg-blue-500 text-white border-blue-500' : 'bg-white/5 text-gray-300 border-white/10'
+                      }`}
+                    >
+                      <Icon size={14} />
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Categories */}
+              <div>
+                <h3 className="font-semibold mb-4">Categories</h3>
+                <div className="flex flex-wrap gap-2">
+                  {categories.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => setActiveCategory(id)}
+                      className={`px-4 py-2 text-sm font-semibold rounded-full flex items-center gap-2 border transition-colors ${
+                        activeCategory === id ? 'bg-amber-500 text-black border-amber-500' : 'bg-white/5 text-gray-300 border-white/10'
+                      }`}
+                    >
+                      {Icon && <Icon size={14} />}
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Sort By */}
+              <div>
+                <h3 className="font-semibold mb-4">Sort By</h3>
+                <div className="space-y-2">
+                  {sortOptions.map(({ id, label, icon: Icon }) => (
+                    <button
+                      key={id}
+                      onClick={() => setSortBy(id)}
+                      className={`w-full p-4 rounded-lg flex items-center justify-between transition-colors ${
+                        sortBy === id ? 'bg-amber-500/20' : 'bg-white/5 hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon size={16} className={sortBy === id ? 'text-amber-400' : ''} />
+                        <span className={sortBy === id ? 'text-amber-300' : ''}>{label}</span>
+                      </div>
+                      {sortBy === id && <Check size={20} className="text-amber-400" />}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <button
+              onClick={() => setShowMobileFilter(false)}
+              className="w-full mt-6 py-4 bg-amber-500 text-black font-bold rounded-lg"
+            >
+              Apply Filters
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
+
+// Dummy Menu component for headless UI compatibility
+const Menu = ({ as: Component = 'div', children }) => <Component>{children}</Component>;
+Menu.Button = ({ children, ...props }) => <button {...props}>{children}</button>;
+Menu.Items = ({ children, ...props }) => <div {...props}>{children}</div>;
+Menu.Item = ({ children }) => <div>{children}</div>;
 
 export default EventsSearchAndFilter;
