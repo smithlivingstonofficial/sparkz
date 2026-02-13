@@ -13,8 +13,10 @@ export const useCart = () => {
   return context;
 };
 
-// Maximum events allowed in cart
-const MAX_EVENTS = 3;
+// Maximum total events allowed in cart
+const MAX_TOTAL_EVENTS = 3;
+// Maximum featured events allowed
+const MAX_FEATURED_EVENTS = 1;
 
 // Cart Provider Component
 export const CartProvider = ({ children }) => {
@@ -42,27 +44,33 @@ export const CartProvider = ({ children }) => {
 
   // Add event to cart
   const addToCart = useCallback((event) => {
-    // Check if event already exists in cart
+    // 1. Check if event already exists in cart
     const exists = cart.some(item => item.id === event.id);
     if (exists) {
       toast.error('Event already in cart!', {
         icon: '⚠️',
-        style: {
-          background: '#f59e0b',
-          color: '#000',
-        }
+        style: { background: '#f59e0b', color: '#000' }
       });
       return false;
     }
 
-    // Check if cart is full
-    if (cart.length >= MAX_EVENTS) {
-      toast.error(`Maximum ${MAX_EVENTS} events allowed in cart!`, {
+    // 2. FEATURED LOGIC: Check if user is trying to add a second featured event
+    if (event.featured) {
+      const hasFeatured = cart.some(item => item.featured === true);
+      if (hasFeatured) {
+        toast.error('Only 1 Featured event allowed per person!', {
+          icon: '⭐',
+          style: { background: '#8b5cf6', color: '#fff' }
+        });
+        return false;
+      }
+    }
+
+    // 3. TOTAL LIMIT LOGIC: Check if total cart is full
+    if (cart.length >= MAX_TOTAL_EVENTS) {
+      toast.error(`Total limit of ${MAX_TOTAL_EVENTS} events reached!`, {
         icon: '❌',
-        style: {
-          background: '#dc2626',
-          color: '#fff',
-        }
+        style: { background: '#dc2626', color: '#fff' }
       });
       return false;
     }
@@ -72,12 +80,9 @@ export const CartProvider = ({ children }) => {
     setCart(updatedCart);
     
     // Show success toast
-    toast.success('Event added to cart!', {
+    toast.success(`${event.title} added to cart!`, {
       icon: '✅',
-      style: {
-        background: '#10b981',
-        color: '#fff',
-      }
+      style: { background: '#10b981', color: '#fff' }
     });
     
     return true;
@@ -90,10 +95,7 @@ export const CartProvider = ({ children }) => {
     
     toast.success('Event removed from cart!', {
       icon: '🗑️',
-      style: {
-        background: '#ef4444',
-        color: '#fff',
-      }
+      style: { background: '#ef4444', color: '#fff' }
     });
     
     return true;
@@ -104,10 +106,7 @@ export const CartProvider = ({ children }) => {
     setCart([]);
     toast.success('Cart cleared!', {
       icon: '🛒',
-      style: {
-        background: '#6b7280',
-        color: '#fff',
-      }
+      style: { background: '#6b7280', color: '#fff' }
     });
   }, []);
 
@@ -116,54 +115,42 @@ export const CartProvider = ({ children }) => {
     return cart.some(item => item.id === eventId);
   }, [cart]);
 
-  // Get cart total
+  // Get cart total (Cleaning price string like "₹500" to number)
   const getCartTotal = useCallback(() => {
     return cart.reduce((total, item) => {
-      const price = item.price ? parseInt(item.price.replace(/[^0-9]/g, '')) : 0;
+      const priceStr = item.price ? String(item.price) : "0";
+      const price = parseInt(priceStr.replace(/[^0-9]/g, '')) || 0;
       return total + price;
     }, 0);
   }, [cart]);
 
   // Get remaining slots
   const getRemainingSlots = useCallback(() => {
-    return MAX_EVENTS - cart.length;
+    return MAX_TOTAL_EVENTS - cart.length;
   }, [cart]);
 
-  // Checkout function (placeholder - you'll integrate with payment gateway)
+  // Checkout function (placeholder)
   const checkout = useCallback(async () => {
     if (cart.length === 0) {
-      toast.error('Cart is empty!', {
-        icon: '🛒',
-      });
+      toast.error('Cart is empty!', { icon: '🛒' });
       return;
     }
 
     setIsLoading(true);
     
-    // Simulate API call
+    // Simulate Processing
     setTimeout(() => {
       setIsLoading(false);
       setCartVisible(false);
       
       toast.success(
         <div>
-          <p className="font-bold">Checkout Successful!</p>
-          <p className="text-sm">Total: ₹{getCartTotal()}</p>
+          <p className="font-bold">Booking Confirmed!</p>
+          <p className="text-sm">Events: {cart.length} | Total: ₹{getCartTotal()}</p>
         </div>,
-        {
-          icon: '🎫',
-          duration: 5000,
-          style: {
-            background: '#10b981',
-            color: '#fff',
-          }
-        }
+        { icon: '🎫', duration: 5000, style: { background: '#10b981', color: '#fff' } }
       );
       
-      // In real app, you would redirect to payment gateway
-      console.log('Proceeding to checkout with events:', cart);
-      
-      // Clear cart after checkout
       clearCart();
     }, 2000);
   }, [cart, getCartTotal, clearCart]);
@@ -186,7 +173,8 @@ export const CartProvider = ({ children }) => {
     getRemainingSlots,
     toggleCart,
     checkout,
-    MAX_EVENTS,
+    MAX_TOTAL_EVENTS,
+    hasFeatured: cart.some(item => item.featured === true), // Useful for UI icons
   };
 
   return (
@@ -197,11 +185,12 @@ export const CartProvider = ({ children }) => {
         toastOptions={{
           duration: 3000,
           style: {
-            background: '#363636',
+            background: '#1a1a1a',
             color: '#fff',
             padding: '16px',
-            borderRadius: '10px',
+            borderRadius: '12px',
             fontSize: '14px',
+            border: '1px solid rgba(255,255,255,0.1)'
           },
         }}
       />
@@ -209,5 +198,4 @@ export const CartProvider = ({ children }) => {
   );
 };
 
-// Export CartContext as default
 export default CartContext;
