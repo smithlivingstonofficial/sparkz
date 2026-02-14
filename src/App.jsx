@@ -25,6 +25,12 @@ const AppLayoutWrapper = () => {
   );
 };
 
+const EventsPageWrapper = () => (
+  <CartProvider>
+    <EventsPage />
+  </CartProvider>
+);
+
 function App() {
   return (
     <AuthProvider>
@@ -34,7 +40,7 @@ function App() {
           {/* Routes wrapped with AppLayout */}
           <Route element={<AppLayoutWrapper />}>
             <Route path="/" element={<HomePage />} />
-            <Route path="/events" element={<EventsPage />} />
+            <Route path="/events" element={<EventsPageWrapper />} />
             <Route path="/proshow" element={<ProShowPage />} />
             <Route path="/sponsors" element={<SponsorsPage />} />
             <Route path="/hospitality" element={<HospitalityPage />} />

@@ -1,118 +1,87 @@
 import React, { useRef, useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  X, Ticket, Bookmark, Calendar, Clock, 
-  MapPin, Users, Sparkles, Award, Phone,
-  Shield, CheckCircle, MapPin as Location,
-  ExternalLink, Share2, Download, ChevronDown,
-  Smartphone, Globe, CreditCard, UserCheck,
-  MessageCircle, FileText, Users as UsersIcon,
-  Mail, MessageSquare, Music, Palette, Theater,
-  Camera, Video, Film, Trophy, Zap, BookOpen
+  X, Calendar, Clock, MapPin, Users, Trophy, 
+  Download, MessageCircle, Phone, CheckCircle, 
+  Share2, ShoppingBag, ArrowRight, Shield, 
+  Music, Gamepad2, ChefHat, Globe, Film, 
+  Camera, BookOpen, Palette, Theater, Zap, Star
 } from 'lucide-react';
+import { useCart } from '../../context/CartContext'; // Ensure this path matches your file structure
 
-// Import icons for different categories
+// --- ICONS MAPPING ---
 const categoryIcons = {
   'music': Music,
-  'drama': Theater,
-  'arts': Palette,
-  'literary': BookOpen,
-  'photo': Camera,
-  'video': Video,
+  'dance': Music, // You can import a specific Dance icon if available
+  'gaming': Gamepad2,
+  'cooking': ChefHat,
+  'tourism': Globe,
   'film': Film,
+  'photography': Camera,
+  'literary': BookOpen,
+  'arts': Palette,
+  'drama': Theater,
   'sports': Trophy,
-  'dance': Zap,
-  'gaming': Zap,
-  'default': Sparkles
+  'technical': Zap,
+  'default': Star
 };
 
-// WhatsApp icon component
-const WhatsAppIcon = ({ className = "w-6 h-6" }) => (
-  <svg 
-    className={className}
-    fill="currentColor"
-    viewBox="0 0 24 24"
-    xmlns="http://www.w3.org/2000/svg"
-  >
-    <path d="M17.507 14.307l-.009.075c-.405-2.202-1.889-4.099-4.445-4.099-2.996 0-5.435 2.471-5.435 5.505 0 1.157.345 2.23.937 3.126l.001.002a8.86 8.86 0 01-.396.579c-.097.134-.2.265-.307.392-1.012 1.208-2.247 2.165-3.55 2.937l.035-.021c.163.097.338.172.518.225.489.143 1.019.2 1.548.154 1.182-.101 2.292-.536 3.2-1.229.093-.07.184-.145.273-.224.165-.146.324-.3.476-.46.022-.022.044-.042.065-.064.197-.206.382-.424.553-.651.002-.002.004-.006.006-.008l-.002.002c.766-1.073 1.217-2.405 1.217-3.844 0-1.939-.987-3.646-2.489-4.65 1.583-.123 3.069.544 4.116 1.788 1.046 1.244 1.386 2.869.956 4.376zM12 22a9.959 9.959 0 01-5.033-1.356l-.361-.214-3.757.982.998-3.675-.236-.375a9.93 9.93 0 01-1.51-5.261C1.25 6.45 5.665 2 11 2s9.75 4.45 9.75 9.929S16.335 21.857 11 21.857c-.34 0-.678-.019-1.014-.057.34.039.678.058 1.014.058z"/>
+const WhatsAppIcon = ({ className }) => (
+  <svg viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.008-.57-.008-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/>
   </svg>
 );
 
 const EventModal = ({ event, onClose }) => {
   if (!event) return null;
-  
-  // Get category icon
-  const CategoryIcon = categoryIcons[event.category?.toLowerCase()] || categoryIcons.default;
-  const modalRef = useRef(null);
-  const contentRef = useRef(null);
-  const [isScrolled, setIsScrolled] = useState(false);
+
+  // --- HOOKS & STATE ---
+  const { addToCart, isInCart } = useCart();
+  const [activeTab, setActiveTab] = useState('about'); // 'about', 'rules', 'contact'
   const [isMobile, setIsMobile] = useState(false);
-  
-  // Download links (these can be moved to event data if different per event)
-  const brochureLink = "https://drive.google.com/file/d/1cHpO4dIxOPr079D_OzchG97O7wvHlQMn/view?usp=drivesdk";
-  const ruleBookLink = "https://drive.google.com/file/d/1L0wOlq7aWcIrR1YJ87byyVQsufHFswwv/view?usp=drivesdk";
-  
+  const modalRef = useRef(null);
+
+  // --- HELPERS ---
+  const CategoryIcon = categoryIcons[event.category?.toLowerCase()] || categoryIcons.default;
+  const isAdded = isInCart(event.id);
+  const eventPrice = typeof event.price === 'number' ? `₹${event.price}` : event.price === 'Free' ? 'Free' : event.price;
+
+  // --- EFFECTS ---
   useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth < 768);
-    };
-    
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
     checkMobile();
     window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
-  
-  useEffect(() => {
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = 'hidden'; // Lock Scroll
     return () => {
-      document.body.style.overflow = 'auto';
+      window.removeEventListener('resize', checkMobile);
+      document.body.style.overflow = 'unset';
     };
   }, []);
 
-  const handleContentScroll = () => {
-    if (contentRef.current) {
-      const scrollTop = contentRef.current.scrollTop;
-      setIsScrolled(scrollTop > 20);
-    }
+  // --- HANDLERS ---
+  const handleAddToCart = () => {
+    addToCart(event);
   };
 
-  // Handle WhatsApp join
-  const handleJoinWhatsApp = () => {
-    if (event.whatsapp) {
-      window.open(event.whatsapp, '_blank', 'noopener,noreferrer');
-    } else {
-      alert('WhatsApp group link not available for this event');
-    }
-  };
-
-  // Handle download
-  const handleDownload = (type, url) => {
+  const handleDownload = (url, name) => {
     const link = document.createElement('a');
     link.href = url;
-    link.download = `${event.title}_${type}.pdf`;
-    link.target = '_blank';
+    link.download = name;
+    link.target = "_blank";
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  // Handle share
   const handleShare = () => {
     if (navigator.share) {
       navigator.share({
         title: event.title,
-        text: event.tagline,
+        text: `Check out ${event.title} at Sparkz 2K26!`,
         url: window.location.href,
       });
-    } else {
-      navigator.clipboard.writeText(`${event.title} - ${event.tagline}\n${window.location.href}`);
-      alert('Event link copied to clipboard!');
     }
   };
-
-  // Get price from event or default
-  const eventPrice = event.price;
 
   return (
     <motion.div
@@ -120,520 +89,305 @@ const EventModal = ({ event, onClose }) => {
       animate={{ opacity: 1 }}
       exit={{ opacity: 0 }}
       data-lenis-prevent
-      className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4"
+      className="fixed inset-0 z-[100] flex items-center justify-center sm:p-4 backdrop-blur-xl bg-black/60"
       onClick={onClose}
     >
-      <div className="absolute inset-0 bg-gradient-to-br from-black/98 via-purple-900/40 to-black/98 backdrop-blur-3xl" />
-      <div className="absolute inset-0 bg-gradient-to-br from-amber-500/15 via-transparent to-red-500/15" />
-      
       <motion.div
         ref={modalRef}
-        initial={{ scale: 0.95, opacity: 0, y: 10 }}
-        animate={{ scale: 1, opacity: 1, y: 0 }}
-        exit={{ scale: 0.95, opacity: 0, y: 10 }}
-        className="relative w-full h-full md:max-w-5xl md:h-[90vh] md:mx-auto rounded-2xl md:rounded-3xl overflow-hidden border border-white/20 shadow-2xl shadow-black/50"
-        onClick={e => e.stopPropagation()}
-        style={{ 
-          background: event.image 
-            ? `linear-gradient(rgba(15, 15, 15, 0.97), rgba(8, 8, 8, 0.99)), url(${event.image})`
-            : (event.gradient || 'linear-gradient(135deg, rgba(30, 64, 175, 0.95), rgba(147, 51, 234, 0.85), rgba(30, 64, 175, 0.95))'),
-          backgroundSize: 'cover',
-          backgroundPosition: 'center'
-        }}
+        initial={{ scale: 0.95, y: 20, opacity: 0 }}
+        animate={{ scale: 1, y: 0, opacity: 1 }}
+        exit={{ scale: 0.95, y: 20, opacity: 0 }}
+        transition={{ type: "spring", damping: 25, stiffness: 300 }}
+        className="relative w-full h-full sm:h-[90vh] sm:max-w-6xl bg-[#0a0a0a] sm:rounded-3xl shadow-2xl overflow-hidden border border-white/10 flex flex-col"
+        onClick={(e) => e.stopPropagation()}
       >
-        <div className="absolute inset-0 bg-gradient-to-br from-black/90 via-black/80 to-black/90 backdrop-blur-2xl" />
         
-        {/* Mobile Header */}
-        {isMobile && (
-          <div className="absolute top-4 left-4 right-4 z-30 flex items-center justify-between">
-            <div className="flex items-center gap-2 px-3 py-1.5 bg-black/80 backdrop-blur-xl rounded-full border border-white/20">
-              <CategoryIcon className="text-amber-300" size={14} />
-              <span className="text-white text-xs font-bold uppercase">
-                {event.category}
+        {/* =========================================
+            HEADER & HERO SECTION (Fixed Top)
+           ========================================= */}
+        <div className="relative h-64 sm:h-80 shrink-0 group">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img 
+              src={event.image || "/api/placeholder/1200/600"} 
+              alt={event.title} 
+              className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105"
+            />
+            {/* Gradient Overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/60 to-transparent" />
+          </div>
+
+          {/* Close Button */}
+          <button 
+            onClick={onClose}
+            className="absolute top-4 right-4 z-20 p-2 bg-black/40 backdrop-blur-md border border-white/10 rounded-full text-white hover:bg-white/10 hover:scale-110 transition-all"
+          >
+            <X size={24} />
+          </button>
+
+          {/* Hero Content */}
+          <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8 z-10">
+            <div className="flex flex-wrap items-center gap-3 mb-3">
+              <span className="px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full uppercase flex items-center gap-1.5">
+                <CategoryIcon size={14} /> {event.category}
               </span>
+              {event.featured && (
+                <span className="px-3 py-1 bg-gradient-to-r from-red-600 to-pink-600 text-white text-xs font-bold rounded-full flex items-center gap-1">
+                  <Star size={12} fill="currentColor" /> Featured
+                </span>
+              )}
             </div>
             
+            <h1 className="text-3xl sm:text-5xl font-black text-white mb-2 leading-tight tracking-tight">
+              {event.title}
+            </h1>
+            <p className="text-lg text-gray-300 font-medium line-clamp-1">{event.tagline}</p>
+          </div>
+        </div>
+
+        {/* =========================================
+            MAIN SCROLLABLE CONTENT
+           ========================================= */}
+        <div className="flex-1 overflow-y-auto no-scrollbar">
+          <div className="flex flex-col lg:flex-row gap-8 p-6 sm:p-8 max-w-7xl mx-auto">
+            
+            {/* --- LEFT COLUMN: DETAILS --- */}
+            <div className="flex-1 space-y-8">
+              
+              {/* Quick Stats Grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <StatsCard icon={Calendar} label="Date" value={event.date} />
+                <StatsCard icon={Clock} label="Time" value={event.time} />
+                <StatsCard icon={MapPin} label="Venue" value={event.venue} />
+                <StatsCard icon={Trophy} label="Prize" value={event.prizePool || "TBA"} highlight />
+              </div>
+
+              {/* Tabs Navigation */}
+              <div className="flex items-center gap-6 border-b border-white/10">
+                {['about', 'rules', 'contact'].map((tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={`pb-3 text-sm font-bold uppercase tracking-wider transition-all relative ${
+                      activeTab === tab ? 'text-amber-500' : 'text-gray-500 hover:text-white'
+                    }`}
+                  >
+                    {tab}
+                    {activeTab === tab && (
+                      <motion.div 
+                        layoutId="activeTab"
+                        className="absolute bottom-0 left-0 right-0 h-0.5 bg-amber-500"
+                      />
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              {/* Tabs Content */}
+              <div className="min-h-[200px]">
+                <AnimatePresence mode="wait">
+                  {activeTab === 'about' && (
+                    <motion.div 
+                      key="about"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-6"
+                    >
+                      <p className="text-gray-300 leading-relaxed text-lg">
+                        {event.description || "Join us for an electrifying experience! This event brings together the best talent to compete, showcase, and win."}
+                      </p>
+                      
+                      <div className="flex flex-wrap gap-4">
+                        <InfoBadge icon={Users} label="Team Size" value={event.participants || "Individual"} />
+                        <InfoBadge icon={Shield} label="Club" value={event.club} />
+                        <InfoBadge icon={Globe} label="Mode" value={event.eventMode} />
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'rules' && (
+                    <motion.div 
+                      key="rules"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="space-y-4"
+                    >
+                      {event.rules?.length > 0 ? (
+                        event.rules.map((rule, idx) => (
+                          <div key={idx} className="flex gap-4 p-4 rounded-xl bg-white/5 border border-white/5 hover:bg-white/10 transition-colors">
+                            <span className="flex-shrink-0 w-6 h-6 rounded-full bg-amber-500/20 text-amber-500 flex items-center justify-center text-xs font-bold">
+                              {idx + 1}
+                            </span>
+                            <p className="text-gray-300 text-sm leading-relaxed">{rule}</p>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-10 text-gray-500">
+                          <CheckCircle size={40} className="mx-auto mb-2 opacity-50" />
+                          <p>Standard event rules apply. Check brochure.</p>
+                        </div>
+                      )}
+                    </motion.div>
+                  )}
+
+                  {activeTab === 'contact' && (
+                    <motion.div 
+                      key="contact"
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                    >
+                      {event.eventCoordinators?.map((coord, idx) => {
+                        const [name, num] = coord.split(' - ');
+                        return (
+                          <div key={idx} className="flex items-center gap-4 p-4 rounded-xl bg-white/5 border border-white/5">
+                            <div className="w-12 h-12 rounded-full bg-gradient-to-br from-gray-800 to-black flex items-center justify-center border border-white/10">
+                              <Phone size={20} className="text-amber-500" />
+                            </div>
+                            <div>
+                              <h4 className="text-white font-bold">{name}</h4>
+                              {num && (
+                                <a href={`tel:${num}`} className="text-sm text-gray-400 hover:text-amber-500 transition-colors">
+                                  {num}
+                                </a>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </div>
+
+            </div>
+
+            {/* --- RIGHT COLUMN: SIDEBAR (Sticky on Desktop) --- */}
+            <div className="lg:w-96 shrink-0 space-y-6 pb-24 lg:pb-0">
+              
+              {/* Registration Card */}
+              <div className="p-6 rounded-3xl bg-gradient-to-br from-[#151515] to-black border border-white/10 shadow-xl relative overflow-hidden group">
+                <div className="absolute top-0 right-0 p-32 bg-amber-500/5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 group-hover:bg-amber-500/10 transition-all duration-500" />
+                
+                <div className="relative z-10">
+                  <h3 className="text-gray-400 text-xs font-bold uppercase tracking-widest mb-1">Registration Fee</h3>
+                  <div className="text-4xl font-black text-white mb-6 flex items-baseline gap-1">
+                    {eventPrice} <span className="text-sm font-normal text-gray-500">/ team</span>
+                  </div>
+
+                  <button
+                    onClick={handleAddToCart}
+                    disabled={isAdded}
+                    className={`w-full py-4 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-all duration-300 transform active:scale-95 shadow-lg
+                      ${isAdded 
+                        ? 'bg-green-600 text-white cursor-default' 
+                        : 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-400 hover:to-orange-500 text-black shadow-orange-500/20'
+                      }
+                    `}
+                  >
+                    {isAdded ? (
+                      <> <CheckCircle size={20} /> Added to Cart </>
+                    ) : (
+                      <> <ShoppingBag size={20} /> Register Now </>
+                    )}
+                  </button>
+
+                  <div className="mt-4 flex items-center justify-center gap-2 text-xs text-gray-500">
+                    <Shield size={12} /> Secure Checkout
+                  </div>
+                </div>
+              </div>
+
+              {/* Downloads & Socials */}
+              <div className="grid grid-cols-1 gap-3">
+                {event.whatsapp && (
+                  <a 
+                    href={event.whatsapp} 
+                    target="_blank" 
+                    rel="noreferrer"
+                    className="flex items-center gap-3 p-4 rounded-xl bg-[#25D366]/10 border border-[#25D366]/20 text-[#25D366] hover:bg-[#25D366]/20 transition-all group"
+                  >
+                    <WhatsAppIcon className="w-6 h-6" />
+                    <span className="font-bold flex-1">Join WhatsApp Group</span>
+                    <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+                  </a>
+                )}
+                
+                <button 
+                   onClick={() => handleDownload("#", "brochure")} // Replace # with real link
+                   className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-all"
+                >
+                  <Download size={20} />
+                  <span className="font-medium flex-1 text-left">Download Brochure</span>
+                </button>
+
+                <button 
+                   onClick={handleShare}
+                   className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 text-gray-300 hover:bg-white/10 hover:text-white transition-all"
+                >
+                  <Share2 size={20} />
+                  <span className="font-medium flex-1 text-left">Share Event</span>
+                </button>
+              </div>
+
+            </div>
+
+          </div>
+        </div>
+
+        {/* =========================================
+            MOBILE STICKY ACTION BAR
+           ========================================= */}
+        {isMobile && (
+          <div className="p-4 bg-[#0a0a0a]/80 backdrop-blur-xl border-t border-white/10 flex items-center gap-4 z-50">
+            <div className="flex-1">
+              <p className="text-xs text-gray-400 uppercase">Total Fee</p>
+              <p className="text-xl font-bold text-white">{eventPrice}</p>
+            </div>
             <button
-              onClick={onClose}
-              className="p-2 bg-black/80 backdrop-blur-xl rounded-full text-white hover:bg-black/95 transition-all duration-300 border border-white/20"
+              onClick={handleAddToCart}
+              disabled={isAdded}
+              className={`px-8 py-3 rounded-xl font-bold text-sm shadow-lg flex items-center gap-2
+                ${isAdded 
+                  ? 'bg-green-600 text-white' 
+                  : 'bg-gradient-to-r from-amber-500 to-orange-600 text-black'
+                }
+              `}
             >
-              <X size={20} />
+              {isAdded ? 'Added' : 'Register Now'}
             </button>
           </div>
         )}
-        
-        {/* Desktop Close Button */}
-        {!isMobile && (
-          <button
-            onClick={onClose}
-            className="absolute top-6 right-6 z-30 p-3 bg-black/80 backdrop-blur-xl rounded-full text-white hover:bg-black/95 transition-all duration-300 hover:scale-110 border border-white/20 shadow-lg group"
-          >
-            <X size={24} className="group-hover:rotate-90 transition-transform duration-300" />
-          </button>
-        )}
-        
-        {/* Scroll Indicator */}
-        <motion.div 
-          animate={{ opacity: isScrolled ? 0 : 1 }}
-          className="absolute top-6 left-1/2 transform -translate-x-1/2 z-30 hidden md:block"
-        >
-          <div className="flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-md rounded-full border border-white/20 shadow-lg">
-            <ChevronDown size={16} className="text-white/60 animate-bounce" />
-            <span className="text-white/80 text-sm font-medium">Scroll for details</span>
-          </div>
-        </motion.div>
 
-        {/* Scrollable Content */}
-        <div 
-          ref={contentRef}
-          onScroll={handleContentScroll}
-          className="relative z-10 h-full overflow-y-auto"
-          style={{ WebkitOverflowScrolling: 'touch' }}
-        >
-          <div className="p-4 sm:p-6 md:p-10 pt-14 sm:pt-6">
-            {/* Mobile Title Section */}
-            {isMobile && (
-              <div className="mb-6">
-                <div className="flex flex-wrap items-center gap-2 mb-4">
-                  <div className="px-3 py-1 bg-gradient-to-r from-amber-600/90 to-red-600/90 backdrop-blur-sm rounded-full">
-                    <span className="text-white text-xs font-bold">DAY {event.day}</span>
-                  </div>
-                  
-                  {event.featured && (
-                    <div className="px-3 py-1 bg-gradient-to-r from-amber-600 to-red-600 rounded-full backdrop-blur-sm flex items-center gap-1">
-                      <Sparkles size={10} className="text-white" />
-                      <span className="text-white text-xs font-bold">FEATURED</span>
-                    </div>
-                  )}
-                  
-                  <div className="px-3 py-1 bg-black/80 backdrop-blur-sm rounded-full border border-white/20">
-                    <span className="text-white text-xs font-medium">{event.eventMode}</span>
-                  </div>
-                </div>
-                
-                <h2 className="text-3xl font-bold font-['Cinzel'] text-white mb-2 leading-tight">
-                  {event.title}
-                </h2>
-                
-                <p className="text-lg text-amber-100 mb-6 font-medium">{event.tagline}</p>
-              </div>
-            )}
-
-            {/* Desktop Header */}
-            {!isMobile && (
-              <div className="flex flex-col lg:flex-row gap-8 mb-8 md:mb-12">
-                <div className="flex-1">
-                  <div className="flex flex-wrap items-center gap-3 mb-6">
-                    <div className="flex items-center gap-2 px-4 py-2 bg-black/80 backdrop-blur-xl rounded-full border border-white/20">
-                      <CategoryIcon className="text-amber-300" size={18} />
-                      <span className="text-white text-sm font-bold uppercase tracking-wider">
-                        {event.category}
-                      </span>
-                    </div>
-                    
-                    <div className="px-4 py-2 bg-gradient-to-r from-amber-600/90 to-red-600/90 backdrop-blur-xl rounded-full">
-                      <span className="text-white text-sm font-bold tracking-wider">{event.day}</span>
-                    </div>
-                    
-                    {event.featured && (
-                      <div className="px-4 py-2 bg-gradient-to-r from-amber-600 to-red-600 rounded-full backdrop-blur-xl flex items-center gap-2">
-                        <Sparkles size={14} className="text-white" />
-                        <span className="text-white text-sm font-bold">FEATURED</span>
-                      </div>
-                    )}
-                    
-                    <div className="px-4 py-2 bg-black/80 backdrop-blur-xl rounded-full border border-white/20">
-                      <span className="text-white text-sm font-medium">{event.eventMode}</span>
-                    </div>
-                  </div>
-                  
-                  <h2 className="text-4xl md:text-5xl lg:text-6xl font-bold font-['Cinzel'] text-white mb-3 md:mb-4 leading-tight tracking-tight">
-                    {event.title}
-                  </h2>
-                  
-                  <p className="text-xl md:text-2xl text-amber-100 mb-6 md:mb-8 font-medium font-['Playfair_Display'] italic">
-                    {event.tagline}
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Main Content Layout */}
-            <div className="flex flex-col lg:flex-row gap-6 md:gap-8">
-              {/* Left Column - Main Content */}
-              <div className="flex-1">
-                {/* Price & Registration - Mobile version placed at top */}
-                {isMobile && (
-                  <div className="mb-6 bg-gradient-to-br from-amber-600/40 to-red-600/40 backdrop-blur-2xl p-5 rounded-2xl border border-amber-500/30 shadow-lg">
-                    <div className="flex items-center justify-between mb-3">
-                      <div>
-                        <div className="text-white/80 text-sm mb-1 font-medium">REGISTRATION FEE</div>
-                        <div className="text-white text-2xl font-bold">{eventPrice}</div>
-                      </div>
-                      <div className="flex items-center gap-2 px-3 py-1.5 bg-black/60 backdrop-blur-sm rounded-full">
-                        <CreditCard size={16} className="text-amber-300" />
-                        <span className="text-white text-xs">Online Payment</span>
-                      </div>
-                    </div>
-                    
-                    <button className="w-full py-3 bg-gradient-to-r from-amber-600 to-red-600 text-white font-bold rounded-xl hover:from-amber-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center gap-2 mb-3 shadow-lg">
-                      <Ticket size={18} />
-                      REGISTER NOW
-                    </button>
-                    
-                    <div className="flex items-center justify-center gap-4 text-xs text-white/60">
-                      <div className="flex items-center gap-1">
-                        <UserCheck size={12} />
-                        <span>{event.seats || 'Limited'} seats</span>
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock size={12} />
-                        <span>Closes 24h before</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Quick Info Grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 mb-6">
-                  {[
-                    { icon: Calendar, label: 'DATE', value: event.date, color: 'text-amber-300' },
-                    { icon: Clock, label: 'TIME', value: event.time, color: 'text-amber-300' },
-                    { icon: MapPin, label: 'VENUE', value: event.venue, color: 'text-amber-300' },
-                    { icon: Shield, label: 'CLUB', value: event.club, color: 'text-amber-300' },
-                    { icon: Users, label: 'SEATS', value: event.seats || 'Limited', color: 'text-amber-300' },
-                    { icon: Award, label: 'TEAMS', value: event.participants || '50+ Teams', color: 'text-amber-300' },
-                    { icon: Globe, label: 'MODE', value: event.eventMode, color: 'text-amber-300' },
-                    ...(event.prizePool ? [{ icon: Award, label: 'PRIZE POOL', value: event.prizePool, color: 'text-amber-300' }] : [])
-                  ].filter(Boolean).map((item, index) => (
-                    <div 
-                      key={index} 
-                      className="bg-white/10 backdrop-blur-lg p-4 rounded-xl border border-white/15 hover:border-amber-500/30 transition-colors"
-                    >
-                      <div className="flex items-center gap-2 mb-2">
-                        <item.icon className={`${item.color} size-4 sm:size-5`} />
-                        <div className="text-white/70 text-xs sm:text-sm font-medium truncate">{item.label}</div>
-                      </div>
-                      <div className="text-white font-bold text-sm sm:text-base md:text-lg truncate">
-                        {item.value}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Event Description */}
-                <div className="bg-black/60 backdrop-blur-xl p-6 rounded-2xl border border-white/15 mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-3 h-8 bg-gradient-to-b from-amber-400 to-red-500 rounded-full"></div>
-                    <h3 className="font-bold text-white text-xl">
-                      EVENT DESCRIPTION
-                    </h3>
-                  </div>
-                  <p className="text-white/85 leading-relaxed text-base md:text-lg">
-                    {event.description || 'No description available.'}
-                  </p>
-                </div>
-
-                {/* Event Coordinators */}
-                <div className="bg-black/60 backdrop-blur-xl p-6 rounded-2xl border border-white/15 mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-3 h-8 bg-gradient-to-b from-amber-400 to-red-500 rounded-full"></div>
-                    <h3 className="font-bold text-white text-xl">
-                      EVENT COORDINATORS
-                    </h3>
-                  </div>
-                  <div className="space-y-4">
-                    {event.eventCoordinators && event.eventCoordinators.length > 0 ? (
-                      event.eventCoordinators.map((coordinator, idx) => {
-                        const [name, phone] = coordinator.split(' - ');
-                        return (
-                          <div key={idx} className="flex items-center gap-4 bg-white/10 p-4 rounded-xl border border-white/10 hover:border-amber-500/30 transition-colors">
-                            <div className="p-3 bg-amber-900/40 rounded-lg backdrop-blur-sm">
-                              <Phone size={20} className="text-amber-300" />
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <div className="text-white font-semibold text-lg truncate">
-                                {name || coordinator}
-                              </div>
-                              {phone && (
-                                <div className="text-amber-300 text-base font-mono mt-1 truncate">
-                                  {phone}
-                                </div>
-                              )}
-                            </div>
-                            {phone && (
-                              <button 
-                                onClick={() => window.open(`tel:${phone}`, '_self')}
-                                className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                              >
-                                <Phone size={16} className="text-white" />
-                              </button>
-                            )}
-                          </div>
-                        );
-                      })
-                    ) : (
-                      <p className="text-white/70 text-center py-4">No coordinators listed.</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Rules Section */}
-                <div className="bg-black/60 backdrop-blur-xl p-6 rounded-2xl border border-white/15 mb-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-3 h-8 bg-gradient-to-b from-amber-400 to-red-500 rounded-full"></div>
-                    <h3 className="font-bold text-white text-xl">
-                      EVENT RULES & GUIDELINES
-                    </h3>
-                  </div>
-                  <div className="space-y-4">
-                    {event.rules && event.rules.length > 0 ? (
-                      event.rules.map((rule, idx) => (
-                        <div key={idx} className="flex items-start gap-4 bg-white/5 p-4 rounded-xl border border-white/5">
-                          <CheckCircle size={22} className="text-green-400 flex-shrink-0 mt-0.5" />
-                          <p className="text-white/85 text-base">{rule}</p>
-                        </div>
-                      ))
-                    ) : (
-                      <p className="text-white/70 text-center py-4">No rules listed.</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* Downloads Section - Mobile only (desktop version in sidebar) */}
-                {isMobile && (
-                  <>
-                    {/* WhatsApp Group Join */}
-                    {event.whatsapp && (
-                      <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/50 backdrop-blur-2xl p-6 rounded-2xl border border-green-500/40 mb-6">
-                        <div className="flex items-center gap-3 mb-6">
-                          <div className="p-2 bg-green-600/30 rounded-lg">
-                            <MessageCircle className="text-green-300" size={24} />
-                          </div>
-                          <h3 className="font-bold text-white text-xl">
-                            JOIN WHATSAPP GROUP
-                          </h3>
-                        </div>
-                        <p className="text-white/80 mb-4">
-                          Connect with other participants, get updates, and clarify doubts in our official WhatsApp group.
-                        </p>
-                        <button 
-                          onClick={handleJoinWhatsApp}
-                          className="w-full py-4 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg"
-                        >
-                          <MessageCircle className="w-6 h-6 text-white" />
-                          <span>Join WhatsApp Group</span>
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Download Materials */}
-                    <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 backdrop-blur-2xl p-6 rounded-2xl border border-blue-500/40 mb-6">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="p-2 bg-blue-600/30 rounded-lg">
-                          <Download className="text-blue-300" size={24} />
-                        </div>
-                        <h3 className="font-bold text-white text-xl">
-                          DOWNLOAD MATERIALS
-                        </h3>
-                      </div>
-                      <div className="space-y-4">
-                        <button 
-                          onClick={() => handleDownload('Brochure', brochureLink)}
-                          className="w-full py-4 bg-gradient-to-r from-blue-600/40 to-blue-800/40 backdrop-blur-lg border border-blue-500/30 text-white rounded-xl hover:from-blue-700/40 hover:to-blue-900/40 transition-all duration-300 flex items-center justify-center gap-3"
-                        >
-                          <FileText className="text-blue-300" size={20} />
-                          <span>Download Event Brochure</span>
-                          <Download className="text-blue-300" size={16} />
-                        </button>
-                        <button 
-                          onClick={() => handleDownload('RuleBook', ruleBookLink)}
-                          className="w-full py-4 bg-gradient-to-r from-purple-600/40 to-purple-800/40 backdrop-blur-lg border border-purple-500/30 text-white rounded-xl hover:from-purple-700/40 hover:to-purple-900/40 transition-all duration-300 flex items-center justify-center gap-3"
-                        >
-                          <FileText className="text-purple-300" size={20} />
-                          <span>Download Rule Book</span>
-                          <Download className="text-purple-300" size={16} />
-                        </button>
-                      </div>
-                    </div>
-                  </>
-                )}
-
-                {/* Venue Details */}
-                <div className="bg-gradient-to-r from-amber-900/50 to-red-900/50 backdrop-blur-2xl p-6 rounded-2xl border border-amber-500/40 mb-6">
-                  <div className="flex items-center gap-3 mb-6">
-                    <Location className="text-amber-300" size={24} />
-                    <h3 className="font-bold text-white text-xl">
-                      VENUE DETAILS
-                    </h3>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <div className="text-white/60 text-sm mb-2 uppercase tracking-wider">LOCATION</div>
-                      <div className="text-white font-bold text-xl">
-                        {event.venue || 'To be announced'}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-white/60 text-sm mb-2 uppercase tracking-wider">ARRIVAL TIME</div>
-                      <div className="text-white font-bold text-xl">
-                        30 minutes before event starts
-                      </div>
-                    </div>
-                  </div>
-                  {event.venueInstructions && (
-                    <div className="mt-6 pt-6 border-t border-amber-500/20">
-                      <div className="text-white/60 text-sm mb-2 uppercase tracking-wider">SPECIAL INSTRUCTIONS</div>
-                      <div className="text-white/90 text-base">
-                        {event.venueInstructions}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Column - Desktop Sidebar */}
-              {!isMobile && (
-                <div className="lg:w-80 space-y-6">
-                  {/* Registration Card */}
-                  <div className="bg-gradient-to-br from-amber-600/40 to-red-600/40 backdrop-blur-2xl p-8 rounded-3xl border border-amber-500/30 shadow-2xl">
-                    <div className="flex items-center justify-between mb-4">
-                      <div>
-                        <div className="text-white/80 text-sm mb-2 font-medium uppercase tracking-wider">REGISTRATION FEE</div>
-                        <div className="text-white text-4xl font-bold mb-2">{eventPrice}</div>
-                      </div>
-                      <div className="flex items-center gap-2 px-4 py-2 bg-black/60 backdrop-blur-sm rounded-full">
-                        <CreditCard size={18} className="text-amber-300" />
-                        <span className="text-white text-sm">Online Payment</span>
-                      </div>
-                    </div>
-                    
-                    <button className="w-full py-4 bg-gradient-to-r from-amber-600 to-red-600 text-white font-bold text-lg rounded-xl hover:from-amber-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center gap-3 mb-4 shadow-lg">
-                      <Ticket size={20} />
-                      REGISTER NOW
-                    </button>
-                    
-                    <div className="space-y-2 text-sm text-white/70">
-                      <div className="flex items-center justify-between">
-                        <span>Available Seats:</span>
-                        <span className="font-bold text-white">{event.seats || 'Limited'}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span>Registration Closes:</span>
-                        <span className="font-bold text-white">24h before event</span>
-                      </div>
-                    </div>
-                  </div>
-                  
-                  {/* WhatsApp Group Join */}
-                  {event.whatsapp && (
-                    <div className="bg-gradient-to-r from-green-900/50 to-emerald-900/50 backdrop-blur-2xl p-6 rounded-2xl border border-green-500/40 shadow-lg">
-                      <div className="flex items-center gap-3 mb-4">
-                        <div className="p-2 bg-green-600/30 rounded-lg">
-                          <MessageCircle className="text-green-300" size={20} />
-                        </div>
-                        <h3 className="font-bold text-white text-lg">
-                          WHATSAPP GROUP
-                        </h3>
-                      </div>
-                      <p className="text-white/80 text-sm mb-4">
-                        Join the official group for updates, discussions, and queries.
-                      </p>
-                      <button 
-                        onClick={handleJoinWhatsApp}
-                        className="w-full py-3 bg-gradient-to-r from-green-600 to-emerald-600 text-white font-bold rounded-xl hover:from-green-700 hover:to-emerald-700 transition-all duration-300 flex items-center justify-center gap-3 mb-2 shadow-lg"
-                      >
-                        <MessageCircle className="w-5 h-5 text-white" />
-                        <span>Join Group</span>
-                      </button>
-                      <div className="flex items-center gap-2 text-xs text-white/60 mt-3">
-                        <UsersIcon size={12} />
-                        <span>Active participants: 50+</span>
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Download Materials */}
-                  <div className="bg-gradient-to-r from-blue-900/50 to-purple-900/50 backdrop-blur-2xl p-6 rounded-2xl border border-blue-500/40 shadow-lg">
-                    <div className="flex items-center gap-3 mb-4">
-                      <div className="p-2 bg-blue-600/30 rounded-lg">
-                        <Download className="text-blue-300" size={20} />
-                      </div>
-                      <h3 className="font-bold text-white text-lg">
-                        DOWNLOAD
-                      </h3>
-                    </div>
-                    <div className="space-y-3">
-                      <button 
-                        onClick={() => handleDownload('Brochure', brochureLink)}
-                        className="w-full py-3 bg-gradient-to-r from-blue-600/40 to-blue-800/40 backdrop-blur-lg border border-blue-500/30 text-white rounded-xl hover:from-blue-700/40 hover:to-blue-900/40 transition-all duration-300 flex items-center justify-center gap-3"
-                      >
-                        <FileText className="text-blue-300" size={18} />
-                        <span>Event Brochure</span>
-                        <Download className="text-blue-300" size={14} />
-                      </button>
-                      <button 
-                        onClick={() => handleDownload('RuleBook', ruleBookLink)}
-                        className="w-full py-3 bg-gradient-to-r from-purple-600/40 to-purple-800/40 backdrop-blur-lg border border-purple-500/30 text-white rounded-xl hover:from-purple-700/40 hover:to-purple-900/40 transition-all duration-300 flex items-center justify-center gap-3"
-                      >
-                        <FileText className="text-purple-300" size={18} />
-                        <span>Rule Book</span>
-                        <Download className="text-purple-300" size={14} />
-                      </button>
-                    </div>
-                  </div>
-                  
-                  {/* Additional Info Card */}
-                  <div className="bg-black/60 backdrop-blur-lg p-6 rounded-2xl border border-white/15">
-                    <div className="text-white/80 text-sm mb-4 font-medium uppercase tracking-wider">ADDITIONAL INFO</div>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/70">Event Status:</span>
-                        <span className="text-green-400 font-bold">Open</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/70">Category:</span>
-                        <span className="text-white font-bold capitalize">{event.category}</span>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <span className="text-white/70">Featured:</span>
-                        <span className={`font-bold ${event.featured ? 'text-green-400' : 'text-gray-400'}`}>
-                          {event.featured ? 'Yes' : 'No'}
-                        </span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              
-            </div>
-
-            {/* Bottom Action Buttons */}
-            <div className="mt-8 pt-8 border-t border-white/20">
-              <div className="flex flex-col sm:flex-row gap-4 md:gap-6">
-                <button className="flex-1 py-4 bg-gradient-to-r from-amber-600 to-red-600 text-white font-bold rounded-xl hover:from-amber-700 hover:to-red-700 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg">
-                  <Ticket size={22} />
-                  <span className="text-lg md:text-xl">REGISTER NOW</span>
-                </button>
-                <button className="flex-1 py-4 bg-white/15 backdrop-blur-xl text-white font-bold rounded-xl hover:bg-white/25 transition-all duration-300 flex items-center justify-center gap-3 border border-white/20">
-                  <Bookmark size={22} />
-                  <span className="text-lg md:text-xl">ADD TO SCHEDULE</span>
-                </button>
-              </div>
-            </div>
-
-            {/* Footer Note */}
-            <div className="mt-6 pb-8 text-center">
-              <p className="text-white/50 text-sm italic">
-                By registering, you agree to abide by all event rules and guidelines.
-              </p>
-            </div>
-          </div>
-        </div>
       </motion.div>
     </motion.div>
   );
 };
+
+// --- SUB-COMPONENTS ---
+
+const StatsCard = ({ icon: Icon, label, value, highlight }) => (
+  <div className={`p-3 rounded-2xl border flex flex-col items-center justify-center text-center gap-1 transition-all
+    ${highlight 
+      ? 'bg-amber-500/10 border-amber-500/30' 
+      : 'bg-white/5 border-white/5 hover:border-white/10'
+    }
+  `}>
+    <Icon size={18} className={highlight ? 'text-amber-500' : 'text-gray-400'} />
+    <span className="text-[10px] uppercase font-bold text-gray-500 tracking-wider">{label}</span>
+    <span className={`text-sm font-bold ${highlight ? 'text-amber-400' : 'text-white'}`}>{value}</span>
+  </div>
+);
+
+const InfoBadge = ({ icon: Icon, label, value }) => (
+  <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5">
+    <Icon size={14} className="text-gray-400" />
+    <span className="text-xs text-gray-400">{label}:</span>
+    <span className="text-xs text-white font-medium">{value}</span>
+  </div>
+);
 
 export default EventModal;
