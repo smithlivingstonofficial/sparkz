@@ -145,8 +145,8 @@ const CartPage = () => {
         upiId,
         user,
         paymentScreenshot,
-        proshow: includeProShow,
-        accommodation: includeAccommodation,
+        proshow: includeProShow || false,
+        accommodation: includeAccommodation || false,
         event: cart,
         totalAmount: totals.total
       }).then((res) => {
