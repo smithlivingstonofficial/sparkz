@@ -23,7 +23,6 @@ const EventsSearchAndFilter = ({
   useEffect(() => {
     if (events) {
       const categoryMap = new Map();
-      
       events.forEach(event => {
         const cat = event.category?.toLowerCase() || 'other';
         categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
