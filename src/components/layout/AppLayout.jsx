@@ -8,9 +8,11 @@ import {
   Volume2,
   VolumeX,
   Sparkles,
+  ShoppingCart,
   User,
   Spotlight,
   LogIn,
+  Target,
   Play
 } from 'lucide-react';
 import { clsx } from 'clsx';
@@ -304,6 +306,10 @@ const AppLayout = ({ children }) => {
               <Film size={20} />
               <span className="text-[10px] font-bold uppercase tracking-widest mt-1">Events</span>
             </Link>
+            <Link to="/proshow" className="flex flex-col items-center p-2 text-white/50 hover:text-amber-500 transition-colors">
+              <Spotlight size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-widest mt-1">Pro</span>
+            </Link>
             <div className="relative -top-6">
                {user ? (
                 <button onClick={() => setIsProfileOpen(true)} className="flex items-center justify-center w-14 h-14 bg-gradient-to-tr from-amber-600 to-red-600 rounded-full border-[4px] border-[#050505] shadow-[0_0_20px_rgba(245,158,11,0.4)] text-white">
@@ -315,9 +321,13 @@ const AppLayout = ({ children }) => {
                 </Link>
               )}
             </div>
-            <Link to="/proshow" className="flex flex-col items-center p-2 text-white/50 hover:text-amber-500 transition-colors">
-              <Spotlight size={20} />
-              <span className="text-[10px] font-bold uppercase tracking-widest mt-1">Pro</span>
+            <Link to="/cart" className="flex flex-col items-center p-2 text-white/50 hover:text-amber-500 transition-colors">
+              <ShoppingCart size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-widest mt-1">Cart</span>
+            </Link>
+            <Link to="/teams" className="flex flex-col items-center p-2 text-white/50 hover:text-amber-500 transition-colors">
+              <Target size={20} />
+              <span className="text-[10px] font-bold uppercase tracking-widest mt-1">Team</span>
             </Link>
             <button onClick={toggleSidebar} className="flex flex-col items-center p-2 text-white/50 hover:text-amber-500 transition-colors">
               <Menu size={20} />

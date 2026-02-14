@@ -15,6 +15,7 @@ import { AuthProvider } from './context/AuthContext';
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
 import ScannerPage from './pages/ScannerPage';
+import ScrollToTop from './components/layout/ScrollToTop'; 
 
 // Layout wrapper for AppLayout routes
 const AppLayoutWrapper = () => {
@@ -36,6 +37,7 @@ function App() {
     <AuthProvider>
       <CartProvider>
         <Router>
+          <ScrollToTop />
           <Routes>
           {/* Routes wrapped with AppLayout */}
           <Route element={<AppLayoutWrapper />}>
