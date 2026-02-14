@@ -135,8 +135,8 @@ const CartPage = () => {
         cart,
         transactionId,
         upiId,
-        includeProShow,
-        includeAccommodation,
+        includeProShow: includeProShow || "false",
+        includeAccommodation: includeAccommodation || "false",
         totalAmount: totals.total,
         paymentScreenshot
       });
