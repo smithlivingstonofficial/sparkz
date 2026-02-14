@@ -14,6 +14,7 @@ import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
+import ScannerPage from './pages/ScannerPage';
 
 // Layout wrapper for AppLayout routes
 const AppLayoutWrapper = () => {
@@ -40,6 +41,7 @@ function App() {
             <Route path="/teams" element={<TeamPage />} />
             <Route path="/cart" element={<CartPage />} />
             <Route path="/profile" element={<ProfilePage />} /> {/* <-- NEW ROUTE */}
+          <Route path="/scanner" element={<ScannerPage />} />
           </Route>
           
           {/* Auth routes with their own layout */}
