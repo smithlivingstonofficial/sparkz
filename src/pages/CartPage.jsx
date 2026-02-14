@@ -156,7 +156,11 @@ const CartPage = () => {
         setShowCheckoutForm(false);
       }).catch((err) => {
         console.log(err);
-        toast.error("Payment failed!");
+        if (err.response.data.error) {
+          toast.error(err.response.data.error);
+        } else {
+          toast.error("Payment failed!");
+        }
       })
     }, 2000);
   };
