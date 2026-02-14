@@ -1,7 +1,7 @@
 import React, { useState, useRef, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-  ShoppingCart, Trash2, ArrowLeft, CreditCard, 
+import {
+  ShoppingCart, Trash2, ArrowLeft, CreditCard,
   Ticket, Calendar, Clock, MapPin, Users, CheckCircle,
   AlertCircle, Shield, X, Upload, QrCode, Copy,
   RotateCw, Receipt, ExternalLink, Sparkles, BedDouble, Info
@@ -10,8 +10,8 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import axios from 'axios';
 
-// ========== PRICING CONFIGURATION ==========
 const PRICES = {
   EVENT_REGISTRATION: 300,
   PRO_SHOW: 500,
@@ -20,11 +20,11 @@ const PRICES = {
 // ===========================================
 
 const CartPage = () => {
-  const { 
-    cart, 
-    removeFromCart, 
-    clearCart, 
-    checkout, 
+  const {
+    cart,
+    removeFromCart,
+    clearCart,
+    checkout,
     isLoading,
     MAX_EVENTS,
     getRemainingSlots
@@ -41,10 +41,10 @@ const CartPage = () => {
   const [transactionId, setTransactionId] = useState('');
   const [upiId, setUpiId] = useState('');
   const [paymentScreenshot, setPaymentScreenshot] = useState(null);
-  const [screenshotPreview, setScreenshotPreview] = useState(null);
   const [isUploading, setIsUploading] = useState(false);
   const [formError, setFormError] = useState('');
   const fileInputRef = useRef(null);
+  const wid = useRef(null);
 
   const sparkzUPI = 'sparkz26@upi';
 
@@ -58,7 +58,7 @@ const CartPage = () => {
     const eventRegistrationFee = (cart.length > 0 && !isKluStudent) ? PRICES.EVENT_REGISTRATION : 0;
     const proShowFee = includeProShow ? PRICES.PRO_SHOW : 0;
     const accommodationFee = includeAccommodation ? PRICES.ACCOMMODATION : 0;
-    
+
     return {
       eventRegistrationFee,
       proShowFee,
@@ -76,6 +76,27 @@ const CartPage = () => {
       setIncludeAccommodation(false);
     }
   }, [hasEvents]);
+  useEffect(() => {
+    const widget = window.cloudinary.createUploadWidget(
+      {
+        cloudName: "dfseckyjx",
+        uploadPreset: "qbvu3y5j",
+        multiple: false,
+        folder: "payments",
+      },
+      (error, result) => {
+        if (!error && result && result.event === "success") {
+          console.log("Uploaded", result.info);
+          setPaymentScreenshot(result.info.secure_url);
+        } else if (error) {
+          console.error("Cloudinary error:", error);
+          alert("Error uploading image!");
+        }
+      }
+    );
+
+    wid.current = widget;
+  }, [])
 
   // NEW: Force Pro Show to false if KLU student (prevents accidental charges if logic changes)
   useEffect(() => {
@@ -86,16 +107,7 @@ const CartPage = () => {
 
   // --- Handlers ---
   const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (!file.type.match('image.*')) {
-      setFormError('Please upload an image file');
-      return;
-    }
-    setPaymentScreenshot(file);
-    const reader = new FileReader();
-    reader.onload = (e) => setScreenshotPreview(e.target.result);
-    reader.readAsDataURL(file);
+    wid.current.open()
   };
 
   const copyUPI = () => {
@@ -112,14 +124,40 @@ const CartPage = () => {
     setIsUploading(true);
     setTimeout(async () => {
       setIsUploading(false);
-      await checkout({
+      if (includeProShow) {
+        cart.push({
+          title: "Pro Show",
+          price: PRICES.PRO_SHOW
+        })
+
+      }
+      console.log({
+        cart,
         transactionId,
         upiId,
         includeProShow,
         includeAccommodation,
-        totalAmount: totals.total
+        totalAmount: totals.total,
+        paymentScreenshot
       });
-      setShowCheckoutForm(false);
+      axios.post("https://sparkz-server.onrender.com/user/event/normal", {
+        transactionId,
+        upiId,
+        user,
+        paymentScreenshot,
+        proshow: includeProShow,
+        accommodation: includeAccommodation,
+        event: cart,
+        totalAmount: totals.total
+      }).then((res) => {
+        console.log(res.data);
+        toast.success("Payment successful!");
+        clearCart();
+        setShowCheckoutForm(false);
+      }).catch((err) => {
+        console.log(err);
+        toast.error("Payment failed!");
+      })
     }, 2000);
   };
 
@@ -149,7 +187,7 @@ const CartPage = () => {
         <div className="grid lg:grid-cols-3 gap-8">
           {/* Left Column: Events & Add-ons */}
           <div className="lg:col-span-2 space-y-8">
-            
+
             {/* Events List */}
             <section>
               <div className="flex items-center justify-between mb-4">
@@ -173,7 +211,7 @@ const CartPage = () => {
                         <h3 className="font-bold text-lg leading-tight uppercase tracking-tight">{event.title}</h3>
                         <p className="text-amber-500/60 text-xs font-mono mt-1 uppercase">{event.category} • {event.date}</p>
                       </div>
-                      <button onClick={() => removeFromCart(event.id)} className="p-3 text-white/20 hover:text-red-500 transition-colors"><Trash2 size={20}/></button>
+                      <button onClick={() => removeFromCart(event.id)} className="p-3 text-white/20 hover:text-red-500 transition-colors"><Trash2 size={20} /></button>
                     </div>
                   ))}
                 </div>
@@ -200,10 +238,10 @@ const CartPage = () => {
 
               {/* UPDATED: grid-cols logic to look better when only one item is present */}
               <div className={`grid ${isKluStudent ? 'grid-cols-1' : 'md:grid-cols-2'} gap-4`}>
-                
+
                 {/* Pro Show Add-on (HIDDEN IF KLU STUDENT) */}
                 {!isKluStudent && (
-                  <div 
+                  <div
                     onClick={() => hasEvents && setIncludeProShow(!includeProShow)}
                     className={`relative p-6 rounded-3xl border-2 transition-all cursor-pointer ${includeProShow ? 'border-purple-500 bg-purple-500/10 shadow-[0_0_30px_rgba(168,85,247,0.2)]' : 'border-white/5 bg-white/5 opacity-40'}`}
                   >
@@ -220,7 +258,7 @@ const CartPage = () => {
                 )}
 
                 {/* Accommodation Add-on (VISIBLE TO ALL) */}
-                <div 
+                <div
                   onClick={() => hasEvents && setIncludeAccommodation(!includeAccommodation)}
                   className={`relative p-6 rounded-3xl border-2 transition-all cursor-pointer ${includeAccommodation ? 'border-blue-500 bg-blue-500/10 shadow-[0_0_30px_rgba(59,130,246,0.2)]' : 'border-white/5 bg-white/5 opacity-40'}`}
                 >
@@ -242,7 +280,7 @@ const CartPage = () => {
           <div className="lg:col-span-1">
             <div className="sticky top-28 bg-[#0a0a0a] border border-white/10 rounded-[2rem] p-8 shadow-2xl overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 blur-3xl rounded-full" />
-              
+
               <h3 className="text-2xl font-bold uppercase tracking-tighter mb-8 flex items-center gap-3">
                 <Receipt className="text-amber-500" /> Summary
               </h3>
@@ -284,7 +322,7 @@ const CartPage = () => {
               </div>
 
               {isKluStudent && totals.total === 0 && hasEvents ? (
-                <button 
+                <button
                   onClick={() => checkout({ totalAmount: 0 })}
                   className="w-full mt-8 py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-amber-500 transition-colors"
                 >
@@ -316,47 +354,47 @@ const CartPage = () => {
       {/* Payment Modal */}
       <AnimatePresence>
         {showCheckoutForm && (
-          <motion.div 
+          <motion.div
             initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
             className="fixed inset-0 z-[100] bg-black/90 backdrop-blur-xl flex items-center justify-center p-4"
           >
-            <motion.div 
+            <motion.div
               initial={{ scale: 0.9, y: 20 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.9, y: 20 }}
               className="bg-[#0f0f0f] border border-white/10 w-full max-w-lg rounded-[2.5rem] overflow-hidden shadow-2xl"
             >
               <div className="p-8 border-b border-white/5 flex justify-between items-center bg-gradient-to-r from-amber-900/10 to-transparent">
-                 <h2 className="text-2xl font-black uppercase italic tracking-tighter">Box Office Payment</h2>
-                 <button onClick={() => setShowCheckoutForm(false)} className="p-2 bg-white/5 rounded-full hover:bg-red-500 transition-colors"><X size={20}/></button>
+                <h2 className="text-2xl font-black uppercase italic tracking-tighter">Box Office Payment</h2>
+                <button onClick={() => setShowCheckoutForm(false)} className="p-2 bg-white/5 rounded-full hover:bg-red-500 transition-colors"><X size={20} /></button>
               </div>
 
               <form onSubmit={handleSubmitPayment} className="p-8 space-y-6 overflow-y-auto max-h-[75vh]">
                 {/* QR Section */}
                 <div className="flex flex-col items-center p-6 bg-white rounded-3xl">
-                   <img 
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${sparkzUPI}&pn=SPARKZ%202K26&am=${totals.total}&cu=INR`} 
-                    alt="QR" 
+                  <img
+                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${sparkzUPI}&pn=SPARKZ%202K26&am=${totals.total}&cu=INR`}
+                    alt="QR"
                     className="w-48 h-48 mix-blend-multiply"
-                   />
-                   <div className="mt-4 text-black text-center">
-                      <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Amount</p>
-                      <p className="text-4xl font-black tracking-tighter">₹{totals.total}</p>
-                   </div>
+                  />
+                  <div className="mt-4 text-black text-center">
+                    <p className="text-[10px] font-black uppercase tracking-widest text-gray-400">Total Amount</p>
+                    <p className="text-4xl font-black tracking-tighter">₹{totals.total}</p>
+                  </div>
                 </div>
 
                 <div className="space-y-4">
                   <div className="grid grid-cols-1 gap-4">
                     <div>
                       <label className="text-[10px] font-black uppercase text-gray-500 ml-1">UTR / Transaction ID*</label>
-                      <input 
-                        type="text" required value={transactionId} onChange={(e)=>setTransactionId(e.target.value)}
+                      <input
+                        type="text" required value={transactionId} onChange={(e) => setTransactionId(e.target.value)}
                         placeholder="12 Digit UTR Number"
                         className="w-full mt-1 px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:border-amber-500 focus:outline-none transition-all font-mono"
                       />
                     </div>
                     <div>
                       <label className="text-[10px] font-black uppercase text-gray-500 ml-1">Your UPI ID (Optional)</label>
-                      <input 
-                        type="text" value={upiId} onChange={(e)=>setUpiId(e.target.value)}
+                      <input
+                        type="text" value={upiId} onChange={(e) => setUpiId(e.target.value)}
                         placeholder="yourname@upi"
                         className="w-full mt-1 px-5 py-4 bg-white/5 border border-white/10 rounded-2xl focus:border-amber-500 focus:outline-none transition-all font-mono"
                       />
@@ -365,27 +403,27 @@ const CartPage = () => {
 
                   <div>
                     <label className="text-[10px] font-black uppercase text-gray-500 ml-1">Upload Receipt*</label>
-                    <div 
+                    <div
                       onClick={() => fileInputRef.current.click()}
                       className="mt-1 group border-2 border-dashed border-white/10 rounded-2xl p-6 text-center cursor-pointer hover:border-amber-500/50 transition-all bg-white/5"
                     >
-                      {screenshotPreview ? (
-                        <img src={screenshotPreview} alt="Receipt" className="h-32 mx-auto rounded-lg" />
+                      {paymentScreenshot ? (
+                        <img src={paymentScreenshot} alt="Receipt" className="h-32 mx-auto rounded-lg" />
                       ) : (
                         <div className="flex flex-col items-center gap-2">
                           <Upload className="text-gray-600 group-hover:text-amber-500 transition-colors" />
                           <span className="text-xs text-gray-500">Tap to upload screenshot</span>
                         </div>
                       )}
-                      <input ref={fileInputRef} type="file" className="hidden" accept="image/*" onChange={handleFileUpload} />
+                      <button ref={fileInputRef} onClick={handleFileUpload} ></button>
                     </div>
                   </div>
                 </div>
 
-                {formError && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs flex items-center gap-2"><AlertCircle size={14}/> {formError}</div>}
+                {formError && <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-500 text-xs flex items-center gap-2"><AlertCircle size={14} /> {formError}</div>}
 
-                <button 
-                  type="submit" 
+                <button
+                  type="submit"
                   disabled={isUploading}
                   className="w-full py-5 bg-amber-500 text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:brightness-110 active:scale-95 transition-all shadow-[0_10px_20px_rgba(245,158,11,0.2)]"
                 >
