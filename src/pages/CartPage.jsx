@@ -19,7 +19,7 @@ const PRICES = {
   ACCOMMODATION: 400
 };
 // ===========================================
-
+const api = import.meta.env.VITE_API_URL;
 const CartPage = () => {
   const {
     cart,
@@ -141,7 +141,7 @@ const CartPage = () => {
         totalAmount: totals.total,
         paymentScreenshot
       });
-      axios.post("https://sparkz-server.onrender.com/user/event/normal", {
+      axios.post(`${api}/user/event/normal`, {
         transactionId,
         upiId,
         user,

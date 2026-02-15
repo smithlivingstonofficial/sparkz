@@ -16,6 +16,7 @@ import { Analytics } from "@vercel/analytics/react"
 import { SpeedInsights } from "@vercel/speed-insights/react"
 import ScannerPage from './pages/ScannerPage';
 import ScrollToTop from './components/layout/ScrollToTop';
+import AdminPage from './pages/AdminPage';
 
 // Layout wrapper for AppLayout routes
 const AppLayoutWrapper = () => {
@@ -46,6 +47,8 @@ function App() {
               <Route path="/cart" element={<CartPage />} />
               <Route path="/profile" element={<ProfilePage />} /> {/* <-- NEW ROUTE */}
               <Route path="/scanner" element={<ScannerPage />} />
+              {/* Admin */}
+              <Route path='/adminu' element={<AdminPage />} />
             </Route>
 
             {/* Auth routes with their own layout */}
