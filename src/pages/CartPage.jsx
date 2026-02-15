@@ -10,6 +10,7 @@ import { Link } from 'react-router-dom';
 import { useCart } from '../context/CartContext';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
+import qr from '../assets/image.png';
 import axios from 'axios';
 
 const PRICES = {
@@ -375,7 +376,7 @@ const CartPage = () => {
                 {/* QR Section */}
                 <div className="flex flex-col items-center p-6 bg-white rounded-3xl">
                   <img
-                    src={`https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${sparkzUPI}&pn=SPARKZ%202K26&am=${totals.total}&cu=INR`}
+                    src={qr}
                     alt="QR"
                     className="w-48 h-48 mix-blend-multiply"
                   />
