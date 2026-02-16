@@ -8,18 +8,34 @@ function AdminPage() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [verifyingId, setVerifyingId] = useState(null);
+    const [activeTab, setActiveTab] = useState("other"); // "other" or "kare"
+
+    const [isAuthenticated, setIsAuthenticated] = useState(false);
+    const [password, setPassword] = useState("");
+
+    const handleLogin = (e) => {
+        e.preventDefault();
+        if (password === "Sparkz2K26") {
+            setIsAuthenticated(true);
+        } else {
+            alert("Invalid Password");
+        }
+    };
+
 
     useEffect(() => {
-        axios.get(`${API}/admin/users`)
-            .then(res => {
-                setUsers(res.data);
-                setLoading(false);
-            })
-            .catch(err => {
-                setError(err);
-                setLoading(false);
-            });
-    }, []);
+        if (isAuthenticated) {
+            axios.get(`${API}/admin/users`)
+                .then(res => {
+                    setUsers(res.data);
+                    setLoading(false);
+                })
+                .catch(err => {
+                    setError(err);
+                    setLoading(false);
+                });
+        }
+    }, [isAuthenticated]);
 
     const verifyUser = async (id) => {
         try {
@@ -39,7 +55,28 @@ function AdminPage() {
             setVerifyingId(null);
         }
     };
-
+    if (!isAuthenticated) {
+        return (
+            <div className="flex flex-col justify-center items-center h-screen bg-black text-white">
+                <h1 className="text-3xl font-bold mb-6 text-red-500">Admin Access</h1>
+                <form onSubmit={handleLogin} className="flex flex-col gap-4">
+                    <input
+                        type="password"
+                        placeholder="Enter Password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        className="p-2 rounded bg-gray-800 border border-gray-700 text-white outline-none focus:border-red-500"
+                    />
+                    <button
+                        type="submit"
+                        className="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded transition"
+                    >
+                        Enter
+                    </button>
+                </form>
+            </div>
+        );
+    }
     if (loading)
         return (
             <div className="flex justify-center items-center h-screen bg-black text-white text-xl">
@@ -54,18 +91,49 @@ function AdminPage() {
             </div>
         );
 
+
+
+    const kareStudents = users.filter(user => user.email.includes("@klu.ac.in"));
+    const otherStudents = users.filter(user => !user.email.includes("@klu.ac.in"));
+
+    const displayedUsers = activeTab === "kare" ? kareStudents : otherStudents;
+
     return (
         <div className="min-h-screen bg-black text-white p-6">
 
             {/* Header */}
-            <h1 className="text-4xl font-bold mb-6 text-red-500">
-                Admin Dashboard
-            </h1>
+            <div className="flex flex-col md:flex-row justify-between items-center mb-6">
+                <h1 className="text-4xl font-bold text-red-500 mb-4 md:mb-0">
+                    Admin Dashboard
+                </h1>
+
+                {/* Tabs */}
+                <div className="flex bg-gray-900 rounded-lg p-1">
+                    <button
+                        onClick={() => setActiveTab("other")}
+                        className={`px-4 py-2 rounded-md transition ${activeTab === "other"
+                            ? "bg-red-600 text-white font-bold"
+                            : "text-gray-400 hover:text-white"
+                            }`}
+                    >
+                        Other Students ({otherStudents.length})
+                    </button>
+                    <button
+                        onClick={() => setActiveTab("kare")}
+                        className={`px-4 py-2 rounded-md transition ${activeTab === "kare"
+                            ? "bg-red-600 text-white font-bold"
+                            : "text-gray-400 hover:text-white"
+                            }`}
+                    >
+                        KARE Students ({kareStudents.length})
+                    </button>
+                </div>
+            </div>
 
             {/* Users Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                {users.map((user, index) => (
+                {displayedUsers.map((user, index) => (
 
                     <div
                         key={user._id}

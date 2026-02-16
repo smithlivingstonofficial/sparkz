@@ -328,7 +328,25 @@ const CartPage = () => {
 
               {isKluStudent && totals.total === 0 && hasEvents ? (
                 <button
-                  onClick={() => checkout({ totalAmount: 0 })}
+                  onClick={() => {
+                    axios.post(`${api}/user/event/normal`, {
+                      user,
+                      event: cart,
+                    }).then((res) => {
+                      console.log(res.data);
+                      toast.success("Booking successful!");
+                      clearCart();
+                      setShowCheckoutForm(false);
+                    }).catch((err) => {
+                      console.log(err);
+                      if (err.response.data.error) {
+                        toast.error(err.response.data.error);
+                      } else {
+                        toast.error("Booking failed!");
+                      }
+                    })
+                    checkout({ totalAmount: 0 })
+                  }}
                   className="w-full mt-8 py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-amber-500 transition-colors"
                 >
                   Confirm Free Booking

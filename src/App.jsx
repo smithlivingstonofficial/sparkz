@@ -48,8 +48,8 @@ function App() {
               <Route path="/profile" element={<ProfilePage />} /> {/* <-- NEW ROUTE */}
               <Route path="/scanner" element={<ScannerPage />} />
               {/* Admin */}
-              <Route path='/adminu' element={<AdminPage />} />
             </Route>
+            <Route path='/adminu' element={<AdminPage />} />
 
             {/* Auth routes with their own layout */}
             <Route path="/auth/*" element={<AuthPage />} />
