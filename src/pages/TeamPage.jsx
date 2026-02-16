@@ -20,7 +20,7 @@ const TeamPage = () => {
       name: 'Dr. S P Balakannan',
       image: '/Teams/Balakannan.png', // Or use BalakannanImage if imported
       color: 'from-purple-600 to-pink-600',
-      role: 'Student Affairs',
+      role: 'Director - Student Affairs',
       accentColor: 'border-purple-500',
     },
       {
@@ -36,7 +36,7 @@ const TeamPage = () => {
       name: 'Dr. C Sangeetha',
       image: '/Teams/Sangeetha.jpeg', // Or use SangeethaImage if imported
       color: 'from-blue-600 to-cyan-600',
-      role: 'Overall Cooredinator',
+      role: 'Overall Coordinator',
       accentColor: 'border-blue-500',
     }
   ];
@@ -360,7 +360,7 @@ const TeamPage = () => {
           <div className="inline-flex items-center gap-4 px-6 py-3 bg-white/5 backdrop-blur-sm rounded-full border border-white/10">
             <Mail className="w-5 h-5 text-amber-400" />
             <p className="text-white/70">
-              For general inquiries: <a href="mailto:sparkz@kare.edu" className="text-amber-400 hover:text-amber-300 transition-colors font-medium">sparkz.klu.ac.in</a>
+              For general enquiries: <a href="mailto:sparkz@kare.edu" className="text-amber-400 hover:text-amber-300 transition-colors font-medium">sparkz@klu.ac.in</a>
             </p>
           </div>
           <p className="text-white/30 text-xs mt-4">

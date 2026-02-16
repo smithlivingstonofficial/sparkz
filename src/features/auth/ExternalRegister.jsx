@@ -474,13 +474,10 @@ const ExternalRegister = () => {
                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5"></div>
                 <span><strong>Accommodation:</strong> Available on first-come-first-serve basis. Charges apply</span>
               </li>
+              
               <li className="flex items-start gap-2">
                 <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5"></div>
-                <span><strong>Transport:</strong> Coordinated pickup from Madurai airport and railway station</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5"></div>
-                <span><strong>Registration Fee:</strong> ₹500 per participant (includes event access)</span>
+                <span><strong>Registration Fee:</strong> ₹800 per participant (includes event access)</span>
               </li>
             </ul>
           </div>

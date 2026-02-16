@@ -299,7 +299,7 @@ const CartPage = () => {
                 <div className="flex justify-between items-center">
                   <span className="text-gray-400">Registration Fee:</span>
                   {isKluStudent ? (
-                    <span className="text-[10px] font-black bg-green-500 text-black px-2 py-1 rounded italic">KLU DISCOUNT Applied</span>
+                    <span className="text-[10px] font-black bg-green-500 text-black px-2 py-1 rounded italic">Paid</span>
                   ) : (
                     <span className="text-white font-bold">₹{hasEvents ? PRICES.EVENT_REGISTRATION : 0}</span>
                   )}
@@ -349,7 +349,7 @@ const CartPage = () => {
                   }}
                   className="w-full mt-8 py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-amber-500 transition-colors"
                 >
-                  Confirm Free Booking
+                  Confirm Booking
                 </button>
               ) : (
                 <button

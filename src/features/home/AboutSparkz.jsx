@@ -26,7 +26,7 @@ const AboutSparkz = () => {
   const { handleExternalPlay } = useContext(MusicContext);
 
   // REPLACE THIS WITH YOUR YOUTUBE VIDEO ID
-  const YOUTUBE_VIDEO_ID = "GCgcYojrDAQ"; 
+  const YOUTUBE_VIDEO_ID = "9mh9p4oc1ps"; // Example: "dQw4w9WgXcQ"
 
   // Handle Background Music Pause/Resume
   useEffect(() => {
