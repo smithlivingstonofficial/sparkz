@@ -17,6 +17,7 @@ import { SpeedInsights } from "@vercel/speed-insights/react"
 import ScannerPage from './pages/ScannerPage';
 import ScrollToTop from './components/layout/ScrollToTop';
 import AdminPage from './pages/AdminPage';
+import OnSpotPage from './pages/OnSpotPage';
 
 // Layout wrapper for AppLayout routes
 const AppLayoutWrapper = () => {
@@ -50,6 +51,7 @@ function App() {
               {/* Admin */}
             </Route>
             <Route path='/admin-only' element={<AdminPage />} />
+            <Route path='/on-spot' element={<OnSpotPage />} />
 
             {/* Auth routes with their own layout */}
             <Route path="/auth/*" element={<AuthPage />} />
