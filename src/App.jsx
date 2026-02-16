@@ -49,7 +49,7 @@ function App() {
               <Route path="/scanner" element={<ScannerPage />} />
               {/* Admin */}
             </Route>
-            <Route path='/adminu' element={<AdminPage />} />
+            <Route path='/admin-only' element={<AdminPage />} />
 
             {/* Auth routes with their own layout */}
             <Route path="/auth/*" element={<AuthPage />} />
