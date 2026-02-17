@@ -234,7 +234,7 @@ const Hero = () => {
                   
                   <div className="relative flex items-center gap-3 text-white font-bold uppercase tracking-[0.2em] text-xs md:text-sm">
                     <Ticket className="w-4 h-4 text-amber-400 group-hover:rotate-12 transition-transform" />
-                    <span>Get Tickets</span>
+                    <span>Register now </span>
                   </div>
                 </motion.button>
               </Link>

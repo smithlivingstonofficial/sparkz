@@ -158,25 +158,7 @@ const ExternalLogin = () => {
           </div>
 
           {/* Information Card */}
-          <div className="mt-8 p-6 bg-blue-500/10 border border-blue-500/20 rounded-lg">
-            <h3 className="text-lg font-semibold text-blue-300 mb-3">
-              For External Participants
-            </h3>
-            <ul className="space-y-2 text-sm text-white/70">
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5"></div>
-                <span>Bring your college ID card for verification</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5"></div>
-                <span>Accommodation available on request</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mt-1.5"></div>
-                <span>Transport assistance provided from major points</span>
-              </li>
-            </ul>
-          </div>
+          
         </div>
       </div>
     </div>

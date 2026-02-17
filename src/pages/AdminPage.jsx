@@ -25,7 +25,7 @@ const API = import.meta.env.VITE_API_URL;
 const AdminPage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState("");
-    
+
     // Data States
     const [users, setUsers] = useState([]);
     const [loading, setLoading] = useState(false);
@@ -41,7 +41,7 @@ const AdminPage = () => {
     // --- Authentication ---
     const handleLogin = (e) => {
         e.preventDefault();
-        if (password === "KARE-Sparkz2K26") { 
+        if (password === "KARE-Sparkz2K26") {
             setIsAuthenticated(true);
             localStorage.setItem("admin_auth", "true");
             toast.success("Welcome, Admin");
@@ -82,19 +82,19 @@ const AdminPage = () => {
     };
 
     // --- Actions ---
-    
+
     // 1. Verify User (FIXED LOGIC)
     const verifyUser = async (id) => {
         setProcessingId(id);
         try {
             // Call API
             const response = await axios.post(`${API}/user/verify/${id}`);
-            
+
             // Check for success (200 OK)
             if (response.status === 200 || response.status === 201) {
                 // Update Local State Immediately (Optimistic Update)
-                setUsers(prevUsers => 
-                    prevUsers.map(user => 
+                setUsers(prevUsers =>
+                    prevUsers.map(user =>
                         user._id === id ? { ...user, verified: true } : user
                     )
                 );
@@ -120,7 +120,7 @@ const AdminPage = () => {
             // If no endpoint exists, this will fail. 
             // Example endpoint: axios.delete(`${API}/admin/users/${id}`)
             // For now, I'll assume standard REST:
-            await axios.delete(`${API}/user/delete/${id}`); 
+            await axios.delete(`${API}/user/delete/${id}`);
 
             setUsers(prevUsers => prevUsers.filter(user => user._id !== id));
             toast.success("User Deleted");
@@ -140,13 +140,13 @@ const AdminPage = () => {
         }
 
         const headers = ["Name", "Email", "Type", "College", "Phone", "Total Paid", "Status", "Transaction ID", "Events", "ProShow", "Stay"];
-        
+
         const csvRows = [
             headers.join(','), // Header row
             ...filteredUsers.map(user => {
                 const isKare = user.email?.includes("@klu.ac.in");
                 const events = user.events?.map(e => e.title).join("; ") || "None";
-                
+
                 return [
                     `"${user.name}"`,
                     `"${user.email}"`,
@@ -177,21 +177,21 @@ const AdminPage = () => {
     // --- Filtering Logic ---
     const filteredUsers = useMemo(() => {
         return users.filter(user => {
-            const matchesSearch = 
+            const matchesSearch =
                 user.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 user.email?.toLowerCase().includes(searchQuery.toLowerCase()) ||
                 user.transactionId?.toLowerCase().includes(searchQuery.toLowerCase());
 
             const isKare = user.email?.toLowerCase().endsWith("@klu.ac.in");
-            const matchesType = 
+            const matchesType =
                 filterType === "all" ? true :
-                filterType === "kare" ? isKare :
-                !isKare;
+                    filterType === "kare" ? isKare :
+                        !isKare;
 
-            const matchesStatus = 
+            const matchesStatus =
                 filterStatus === "all" ? true :
-                filterStatus === "verified" ? user.verified :
-                !user.verified;
+                    filterStatus === "verified" ? user.verified :
+                        !user.verified;
 
             return matchesSearch && matchesType && matchesStatus;
         });
@@ -200,30 +200,32 @@ const AdminPage = () => {
     // --- Statistics Logic ---
     const stats = useMemo(() => {
         const totalUsers = users.length;
-        const totalRevenue = users.reduce((acc, curr) => acc + (curr.totalAmount || 0), 0);
+        const totalRevenue = users.filter(user => (!user.email.endsWith("@klu.ac.in") || user.accommodation) && user.paymentScreenshot).reduce((acc, user) => {
+            return acc + (300 + (user.proshow ? 500 : 0) + (user.accommodation ? 400 : 0));
+        }, 0);
         const pending = users.filter(u => !u.verified).length;
         const verified = users.filter(u => u.verified).length;
         return { totalUsers, totalRevenue, pending, verified };
     }, [users]);
 
-
+    console.log(users.filter(user => (!user.email.endsWith("@klu.ac.in") || user.accommodation) && user.paymentScreenshot))
     // --- RENDER: LOGIN SCREEN ---
     if (!isAuthenticated) {
         return (
             <div className="min-h-screen bg-black flex flex-col items-center justify-center p-4 relative overflow-hidden">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,#220000_0%,#000_100%)]" />
-                
-                <motion.div 
+
+                <motion.div
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     className="relative z-10 w-full max-w-md bg-[#111] border border-red-900/30 p-8 rounded-2xl shadow-2xl backdrop-blur-xl"
                 >
                     <div className="flex justify-center mb-6">
-                         <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(220,38,38,0.5)]">A</div>
+                        <div className="w-16 h-16 bg-red-600 rounded-full flex items-center justify-center text-white font-black text-2xl shadow-[0_0_20px_rgba(220,38,38,0.5)]">A</div>
                     </div>
                     <h1 className="text-3xl font-black text-center text-white mb-2 uppercase tracking-tight">Admin Access</h1>
                     <p className="text-center text-gray-500 mb-8 text-sm">Secure Gateway for Sparkz 2K26</p>
-                    
+
                     <form onSubmit={handleLogin} className="space-y-4">
                         <input
                             type="password"
@@ -240,7 +242,7 @@ const AdminPage = () => {
                         </button>
                     </form>
                 </motion.div>
-                <Toaster position="bottom-center" toastOptions={{ style: { background: '#333', color: '#fff' }}} />
+                <Toaster position="bottom-center" toastOptions={{ style: { background: '#333', color: '#fff' } }} />
             </div>
         );
     }
@@ -248,7 +250,7 @@ const AdminPage = () => {
     // --- RENDER: DASHBOARD ---
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-red-500 selection:text-white">
-            <Toaster position="top-right" toastOptions={{ style: { background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}} />
+            <Toaster position="top-right" toastOptions={{ style: { background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
 
             {/* HEADER */}
             <header className="fixed top-0 left-0 right-0 z-40 bg-[#0a0a0a]/80 backdrop-blur-md border-b border-white/5">
@@ -260,9 +262,9 @@ const AdminPage = () => {
                             <p className="text-[10px] text-gray-500 font-mono tracking-widest">SPARKZ 2K26 DATABASE</p>
                         </div>
                     </div>
-                    
+
                     <div className="flex items-center gap-2 sm:gap-4">
-                        <button onClick={() => setRefreshKey(p => p+1)} className="p-2 text-gray-400 hover:text-white transition-colors bg-white/5 rounded-lg border border-white/5">
+                        <button onClick={() => setRefreshKey(p => p + 1)} className="p-2 text-gray-400 hover:text-white transition-colors bg-white/5 rounded-lg border border-white/5">
                             <RefreshCw size={18} className={loading ? "animate-spin" : ""} />
                         </button>
                         <button onClick={handleLogout} className="flex items-center gap-2 px-3 py-2 bg-red-500/10 text-red-500 hover:bg-red-500 hover:text-white rounded-lg border border-red-500/20 transition-all text-xs font-bold uppercase">
@@ -273,7 +275,7 @@ const AdminPage = () => {
             </header>
 
             <main className="max-w-7xl mx-auto px-4 sm:px-6 pt-24 pb-12">
-                
+
                 {/* ANALYTICS CARDS */}
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4 mb-8">
                     <StatCard label="Total Users" value={stats.totalUsers} icon={Users} color="text-blue-500" bg="bg-blue-500/10" border="border-blue-500/20" />
@@ -284,13 +286,13 @@ const AdminPage = () => {
 
                 {/* FILTERS & SEARCH - Responsive Stack */}
                 <div className="bg-[#111] border border-white/5 rounded-2xl p-4 mb-8 flex flex-col lg:flex-row gap-4 justify-between items-center sticky top-20 z-30 shadow-2xl">
-                    
+
                     {/* Search Bar */}
                     <div className="relative w-full lg:w-96">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                        <input 
-                            type="text" 
-                            placeholder="Search Name, Email, Txn ID..." 
+                        <input
+                            type="text"
+                            placeholder="Search Name, Email, Txn ID..."
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             className="w-full bg-black border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:border-amber-500 focus:outline-none transition-colors"
@@ -304,10 +306,10 @@ const AdminPage = () => {
                             <FilterButton label="KARE" active={filterType === 'kare'} onClick={() => setFilterType('kare')} />
                             <FilterButton label="External" active={filterType === 'external'} onClick={() => setFilterType('external')} />
                         </div>
-                        
+
                         <div className="flex gap-2 w-full sm:w-auto">
-                            <select 
-                                value={filterStatus} 
+                            <select
+                                value={filterStatus}
                                 onChange={(e) => setFilterStatus(e.target.value)}
                                 className="flex-1 sm:flex-none bg-black border border-white/10 rounded-xl px-4 py-2 text-sm text-gray-300 focus:border-amber-500 outline-none"
                             >
@@ -316,7 +318,7 @@ const AdminPage = () => {
                                 <option value="pending">Pending</option>
                             </select>
 
-                            <button 
+                            <button
                                 onClick={exportToCSV}
                                 className="flex items-center gap-2 px-4 py-2 bg-green-900/20 text-green-500 hover:bg-green-500 hover:text-white border border-green-500/20 rounded-xl transition-all text-xs font-bold uppercase"
                                 title="Export to CSV"
@@ -341,10 +343,10 @@ const AdminPage = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {filteredUsers.map((user) => (
-                            <UserCard 
-                                key={user._id} 
-                                user={user} 
+                        {filteredUsers.filter((user) => user.paymentScreenshot != null).map((user) => (
+                            <UserCard
+                                key={user._id}
+                                user={user}
                                 onVerify={() => verifyUser(user._id)}
                                 onDelete={() => deleteUser(user._id, user.name)}
                                 isProcessing={processingId === user._id}
@@ -364,10 +366,10 @@ const AdminPage = () => {
                                 <LogOut size={24} />
                             </button>
                             <img src={selectedImage} alt="Proof" className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-2xl border border-white/10" onClick={(e) => e.stopPropagation()} />
-                            <a 
-                                href={selectedImage} 
-                                download 
-                                target="_blank" 
+                            <a
+                                href={selectedImage}
+                                download
+                                target="_blank"
                                 rel="noreferrer"
                                 className="mt-6 flex items-center gap-2 px-6 py-3 bg-amber-600 text-black font-bold rounded-full hover:bg-amber-500 transition-colors"
                                 onClick={(e) => e.stopPropagation()}
@@ -399,7 +401,7 @@ const StatCard = ({ label, value, icon: Icon, color, bg, border }) => (
 );
 
 const FilterButton = ({ label, active, onClick }) => (
-    <button 
+    <button
         onClick={onClick}
         className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider transition-all whitespace-nowrap flex-1 sm:flex-none
             ${active ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'bg-black border border-white/10 text-gray-400 hover:text-white hover:bg-white/5'}
@@ -411,7 +413,7 @@ const FilterButton = ({ label, active, onClick }) => (
 
 const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
     const isKare = user.email?.includes("@klu.ac.in");
-    
+
     return (
         <div className="bg-[#111] border border-white/5 rounded-2xl overflow-hidden hover:border-amber-500/30 transition-all group shadow-lg flex flex-col">
             {/* CARD HEADER */}
@@ -442,7 +444,7 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
 
             {/* CARD BODY */}
             <div className="p-4 space-y-4 flex-1">
-                
+
                 {/* Info Grid */}
                 <div className="grid grid-cols-2 gap-3 text-xs">
                     <div className="bg-black/40 p-2.5 rounded-lg border border-white/5 overflow-hidden">
@@ -451,7 +453,7 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                     </div>
                     <div className="bg-black/40 p-2.5 rounded-lg border border-white/5">
                         <span className="text-gray-500 block text-[10px] uppercase font-bold mb-0.5">Total Paid</span>
-                        <span className="text-amber-500 font-black block">₹{user.totalAmount || 0}</span>
+                        <span className="text-amber-500 font-black block">₹{300 + (user.proshow ? 500 : 0) + (user.accommodation ? 400 : 0) || 0}</span>
                     </div>
                 </div>
 
@@ -475,14 +477,25 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                 </div>
 
                 {/* Event Names List (Scrollable if too long) */}
-                 {user.events?.length > 0 && (
+                {user.events?.length > 0 && (
                     <div className="text-[10px] text-gray-500 leading-relaxed bg-black/20 p-2 rounded border border-white/5 max-h-20 overflow-y-auto custom-scrollbar">
                         <strong className="text-gray-400">Events:</strong> {user.events.map(e => e.title).join(", ")}
                     </div>
                 )}
-
+                {isKare && (user.accommodation && user.paymentScreenshot !== "") && (
+                    <div className="relative group rounded-lg overflow-hidden h-24 border border-white/10 bg-black cursor-pointer mt-auto" onClick={() => onImageClick(user.paymentScreenshot)}>
+                        <img src={user.paymentScreenshot} alt="Proof" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                            <Eye size={16} className="text-white" />
+                            <span className="text-[10px] font-bold text-white uppercase">View Receipt</span>
+                        </div>
+                        <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[8px] font-mono text-gray-400 truncate max-w-full">
+                            ID: {user.transactionId}
+                        </div>
+                    </div>
+                )}
                 {/* Payment Proof Section - Only for External/Paid */}
-                {!isKare && user.paymentScreenshot ? (
+                {!isKare && user.paymentScreenshot !== "" ? (
                     <div className="relative group rounded-lg overflow-hidden h-24 border border-white/10 bg-black cursor-pointer mt-auto" onClick={() => onImageClick(user.paymentScreenshot)}>
                         <img src={user.paymentScreenshot} alt="Proof" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
                         <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
@@ -495,7 +508,7 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                     </div>
                 ) : (
                     // Spacer for alignment if no image
-                    !isKare && <div className="h-24 bg-white/5 rounded-lg border border-white/5 flex items-center justify-center text-[10px] text-gray-600 uppercase font-bold">No Image Uploaded</div>
+                    !isKare && user.paymentScreenshot === "" && <div className="h-24 bg-white/5 rounded-lg border border-white/5 flex items-center justify-center text-[10px] text-gray-600 uppercase font-bold">No Image Uploaded</div>
                 )}
             </div>
 
@@ -505,8 +518,8 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                     onClick={onVerify}
                     disabled={user.verified || isProcessing}
                     className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all
-                        ${user.verified 
-                            ? 'bg-green-500/10 text-green-500 cursor-default border border-green-500/20' 
+                        ${user.verified
+                            ? 'bg-green-500/10 text-green-500 cursor-default border border-green-500/20'
                             : 'bg-gradient-to-r from-red-600 to-amber-600 text-white hover:shadow-lg hover:shadow-red-900/20 active:scale-95'
                         }
                     `}
@@ -520,6 +533,26 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                     )}
                 </button>
             </div>
+            {!user.verified && (
+                <div className="p-4 bg-[#080808] border-t border-white/5">
+                    <button
+                        onClick={() => { axios.post(`${API}/user/decline/${user._id}`) }}
+                        disabled={isProcessing}
+                        className={`w-full py-3 rounded-xl font-bold text-xs uppercase tracking-widest transition-all
+                        ${isProcessing
+                                ? 'bg-green-500/10 text-green-500 cursor-default border border-green-500/20'
+                                : 'bg-gradient-to-r from-red-500 to-red-600 text-white hover:shadow-lg hover:shadow-red-900/20 active:scale-95'
+                            }
+                    `}
+                    >
+                        {isProcessing ? (
+                            <span className="flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={14} /> Processing...</span>
+                        ) : (
+                            "Decline Payment"
+                        )}
+                    </button>
+                </div>
+            )}
         </div>
     );
 };
