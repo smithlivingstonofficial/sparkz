@@ -200,13 +200,15 @@ const AdminPage = () => {
     // --- Statistics Logic ---
     const stats = useMemo(() => {
         const totalUsers = users.length;
-        const totalRevenue = users.reduce((acc, curr) => acc + ((curr.paymentScreenshot ? 300 : 0) + (curr.proshow ? 500 : 0) + (curr.accommodation ? 400 : 0) || 0), 0);
+        const totalRevenue = users.filter(user => (!user.email.endsWith("@klu.ac.in") || user.accommodation) && user.paymentScreenshot).reduce((acc, user) => {
+            return acc + (300 + (user.proshow ? 500 : 0) + (user.accommodation ? 400 : 0));
+        }, 0);
         const pending = users.filter(u => !u.verified).length;
         const verified = users.filter(u => u.verified).length;
         return { totalUsers, totalRevenue, pending, verified };
     }, [users]);
 
-
+    console.log(users.filter(user => (!user.email.endsWith("@klu.ac.in") || user.accommodation) && user.paymentScreenshot))
     // --- RENDER: LOGIN SCREEN ---
     if (!isAuthenticated) {
         return (
@@ -480,9 +482,20 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                         <strong className="text-gray-400">Events:</strong> {user.events.map(e => e.title).join(", ")}
                     </div>
                 )}
-
+                {isKare && (user.accommodation && user.paymentScreenshot !== "") && (
+                    <div className="relative group rounded-lg overflow-hidden h-24 border border-white/10 bg-black cursor-pointer mt-auto" onClick={() => onImageClick(user.paymentScreenshot)}>
+                        <img src={user.paymentScreenshot} alt="Proof" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
+                        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
+                            <Eye size={16} className="text-white" />
+                            <span className="text-[10px] font-bold text-white uppercase">View Receipt</span>
+                        </div>
+                        <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[8px] font-mono text-gray-400 truncate max-w-full">
+                            ID: {user.transactionId}
+                        </div>
+                    </div>
+                )}
                 {/* Payment Proof Section - Only for External/Paid */}
-                {!isKare && user.paymentScreenshot ? (
+                {!isKare && user.paymentScreenshot !== "" ? (
                     <div className="relative group rounded-lg overflow-hidden h-24 border border-white/10 bg-black cursor-pointer mt-auto" onClick={() => onImageClick(user.paymentScreenshot)}>
                         <img src={user.paymentScreenshot} alt="Proof" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
                         <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
@@ -495,7 +508,7 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                     </div>
                 ) : (
                     // Spacer for alignment if no image
-                    !isKare && <div className="h-24 bg-white/5 rounded-lg border border-white/5 flex items-center justify-center text-[10px] text-gray-600 uppercase font-bold">No Image Uploaded</div>
+                    !isKare && user.paymentScreenshot === "" && <div className="h-24 bg-white/5 rounded-lg border border-white/5 flex items-center justify-center text-[10px] text-gray-600 uppercase font-bold">No Image Uploaded</div>
                 )}
             </div>
 
