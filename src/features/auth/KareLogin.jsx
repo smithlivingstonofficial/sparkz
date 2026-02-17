@@ -69,7 +69,7 @@ const KareLogin = () => {
                 Please sign in using your institutional Google account.
               </p>
 
-              <button
+              {/* <button
                 onClick={handleGoogleLogin}
                 type="button"
                 className="w-full py-4 bg-white text-black font-bold text-lg rounded-lg hover:bg-gray-100 transition-all duration-300 flex items-center justify-center gap-3 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
@@ -93,7 +93,7 @@ const KareLogin = () => {
                   />
                 </svg>
                 Sign in with KARE Mail
-              </button>
+              </button> */}
 
               <p className="mt-4 text-xs text-white/40">
                 Only @klu.ac.in email addresses are permitted.
