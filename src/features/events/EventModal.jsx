@@ -159,7 +159,16 @@ const EventModal = ({ event, onClose }) => {
                 <StatsCard icon={Calendar} label="Date" value={event.date} />
                 <StatsCard icon={Clock} label="Time" value={event.time} />
                 <StatsCard icon={MapPin} label="Venue" value={event.venue} />
-                <StatsCard icon={Trophy} label="Prize" value={event.prizePool || "TBA"} highlight />
+                <StatsCard 
+  icon={Trophy}
+  label="Prize"
+  value={event.featured ? (
+    <>1st Prize - 3000 <br /> 2nd Prize - 1500</>
+  ) : (
+    <>1st Prize - 750 <br /> 2nd Prize - 500</>
+  )}
+  highlight
+/>
               </div>
 
               {/* Tabs Navigation */}
