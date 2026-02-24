@@ -10,6 +10,7 @@ import HospitalityPage from './pages/HospitalityPage';
 import TeamPage from './pages/TeamPage';
 import CartPage from './pages/CartPage';
 import ProfilePage from './pages/ProfilePage'; // <-- NEW IMPORT
+import PostponedPopup from './components/layout/PostponedPopup';
 import { CartProvider } from './context/CartContext';
 import { AuthProvider } from './context/AuthContext';
 import { Analytics } from "@vercel/analytics/react"
@@ -59,6 +60,7 @@ function App() {
             {/* 404 Page */}
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          <PostponedPopup />
           <Analytics />
           <SpeedInsights />
         </Router>
