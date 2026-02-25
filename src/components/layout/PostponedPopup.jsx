@@ -51,7 +51,7 @@ const PostponedPopup = () => {
                   </p>
                   
                   <p className="leading-relaxed text-gray-300">
-                    We offer our heartfelt prayers during this time of grief. The revised dates will be announced shortly.
+                    We offer our heartfelt prayers during this time of grief <span className="font-bold text-red-400">The revised dates will be announced shortly</span>
                   </p>
                 </div>
 
