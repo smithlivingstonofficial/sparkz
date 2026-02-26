@@ -34,7 +34,7 @@ const AdminPage = () => {
 
     // UI States
     const [searchQuery, setSearchQuery] = useState("");
-    const [filterType, setFilterType] = useState("all"); // all, kare, external
+    const [filterType, setFilterType] = useState("external"); // external, kare
     const [filterStatus, setFilterStatus] = useState("all"); // all, verified, pending
     const [selectedImage, setSelectedImage] = useState(null);
 
@@ -284,48 +284,57 @@ const AdminPage = () => {
                     <StatCard label="Pending" value={stats.pending} icon={Loader2} color="text-red-500" bg="bg-red-500/10" border="border-red-500/20" />
                 </div>
 
-                {/* FILTERS & SEARCH - Responsive Stack */}
-                <div className="bg-[#111] border border-white/5 rounded-2xl p-4 mb-8 flex flex-col lg:flex-row gap-4 justify-between items-center sticky top-20 z-30 shadow-2xl">
+                {/* TABBED VIEW CONTROL */}
+                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
 
-                    {/* Search Bar */}
-                    <div className="relative w-full lg:w-96">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
-                        <input
-                            type="text"
-                            placeholder="Search Name, Email, Txn ID..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="w-full bg-black border border-white/10 rounded-xl pl-10 pr-4 py-3 text-sm text-white focus:border-amber-500 focus:outline-none transition-colors"
-                        />
+                    {/* Tabs */}
+                    <div className="bg-[#111] p-1 rounded-xl flex gap-1 border border-white/5 w-full md:w-auto">
+                        <button
+                            onClick={() => setFilterType('external')}
+                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2
+                                ${filterType === 'external' ? 'bg-amber-600 text-black shadow-lg shadow-amber-900/40' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'}
+                            `}
+                        >
+                            <DollarSign size={16} /> External Payments
+                        </button>
+                        <button
+                            onClick={() => setFilterType('kare')}
+                            className={`flex-1 md:flex-none px-6 py-2.5 rounded-lg text-sm font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2
+                                ${filterType === 'kare' ? 'bg-green-600 text-black shadow-lg shadow-green-900/40' : 'text-gray-500 hover:text-gray-300 hover:bg-white/5'}
+                            `}
+                        >
+                            <School size={16} /> KARE Students
+                        </button>
                     </div>
 
-                    {/* Filter Controls */}
-                    <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                        <div className="flex gap-2 overflow-x-auto pb-1 sm:pb-0 no-scrollbar">
-                            <FilterButton label="All" active={filterType === 'all'} onClick={() => setFilterType('all')} />
-                            <FilterButton label="KARE" active={filterType === 'kare'} onClick={() => setFilterType('kare')} />
-                            <FilterButton label="External" active={filterType === 'external'} onClick={() => setFilterType('external')} />
+                    {/* Status Filter & Search */}
+                    <div className="flex items-center gap-3 w-full md:w-auto bg-[#111] p-1.5 rounded-xl border border-white/5">
+                        <div className="relative flex-1 md:w-64">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-600" size={14} />
+                            <input
+                                type="text"
+                                placeholder="Search..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-black/50 border border-white/5 rounded-lg pl-9 pr-3 py-2 text-xs text-white focus:border-white/20 focus:outline-none"
+                            />
                         </div>
-
-                        <div className="flex gap-2 w-full sm:w-auto">
-                            <select
-                                value={filterStatus}
-                                onChange={(e) => setFilterStatus(e.target.value)}
-                                className="flex-1 sm:flex-none bg-black border border-white/10 rounded-xl px-4 py-2 text-sm text-gray-300 focus:border-amber-500 outline-none"
-                            >
-                                <option value="all">All Status</option>
-                                <option value="verified">Verified</option>
-                                <option value="pending">Pending</option>
-                            </select>
-
-                            <button
-                                onClick={exportToCSV}
-                                className="flex items-center gap-2 px-4 py-2 bg-green-900/20 text-green-500 hover:bg-green-500 hover:text-white border border-green-500/20 rounded-xl transition-all text-xs font-bold uppercase"
-                                title="Export to CSV"
-                            >
-                                <FileSpreadsheet size={16} /> <span className="hidden sm:inline">Export</span>
-                            </button>
-                        </div>
+                        <select
+                            value={filterStatus}
+                            onChange={(e) => setFilterStatus(e.target.value)}
+                            className="bg-black/50 border border-white/5 rounded-lg px-3 py-2 text-xs text-gray-400 focus:border-white/20 outline-none"
+                        >
+                            <option value="all">All</option>
+                            <option value="verified">Verified</option>
+                            <option value="pending">Pending</option>
+                        </select>
+                        <button
+                            onClick={exportToCSV}
+                            className="p-2 bg-white/5 text-gray-400 hover:text-white rounded-lg border border-white/5 transition-colors"
+                            title="Export to CSV"
+                        >
+                            <FileSpreadsheet size={16} />
+                        </button>
                     </div>
                 </div>
 
@@ -343,7 +352,7 @@ const AdminPage = () => {
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                        {filteredUsers.filter((user) => user.paymentScreenshot != null).map((user) => (
+                        {filteredUsers.filter((user) => user.paymentScreenshot || user.email?.toLowerCase().endsWith("@klu.ac.in")).map((user) => (
                             <UserCard
                                 key={user._id}
                                 user={user}
@@ -424,10 +433,14 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                     </div>
                     <div className="min-w-0">
                         <h3 className="font-bold text-white text-base leading-tight truncate">{user.name}</h3>
-                        <div className="flex items-center gap-2 mt-1">
-                            <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isKare ? 'bg-red-500/10 text-red-400' : 'bg-blue-500/10 text-blue-400'}`}>
-                                {isKare ? 'KARE' : 'EXTERNAL'}
-                            </span>
+                        <div className="flex flex-col mt-1">
+                            <div className="flex items-center gap-2">
+                                <span className={`text-[10px] font-mono px-1.5 py-0.5 rounded ${isKare ? 'bg-red-500/10 text-red-400' : 'bg-blue-500/10 text-blue-400'}`}>
+                                    {isKare ? 'KARE' : 'EXTERNAL'}
+                                </span>
+                                {user.year && <span className="text-[10px] text-gray-500 font-mono">Yr: {user.year}</span>}
+                            </div>
+                            {user.branch && <span className="text-[10px] text-gray-500 font-mono truncate mt-0.5">{user.branch}</span>}
                         </div>
                     </div>
                 </div>
@@ -450,10 +463,16 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                     <div className="bg-black/40 p-2.5 rounded-lg border border-white/5 overflow-hidden">
                         <span className="text-gray-500 block text-[10px] uppercase font-bold mb-0.5">Contact</span>
                         <span className="text-gray-300 truncate block font-mono" title={user.email}>{user.email}</span>
+                        <span className="text-gray-400 truncate block font-mono mt-1" title={user.phone}>{user.phone || "No Phone"}</span>
                     </div>
                     <div className="bg-black/40 p-2.5 rounded-lg border border-white/5">
-                        <span className="text-gray-500 block text-[10px] uppercase font-bold mb-0.5">Total Paid</span>
-                        <span className="text-amber-500 font-black block">₹{300 + (user.proshow ? 500 : 0) + (user.accommodation ? 400 : 0) || 0}</span>
+                        <span className="text-gray-500 block text-[10px] uppercase font-bold mb-0.5">Payment</span>
+                        <span className={`font-black block ${isKare ? 'text-gray-400' : 'text-amber-500'}`}>
+                            ₹{300 + (user.proshow ? 500 : 0) + (user.accommodation ? 400 : 0) || 0}
+                        </span>
+                        {isKare && (
+                            <span className="text-green-500 text-[9px] font-bold block mt-0.5">KARE Student</span>
+                        )}
                     </div>
                 </div>
 
@@ -478,24 +497,18 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
 
                 {/* Event Names List (Scrollable if too long) */}
                 {user.events?.length > 0 && (
-                    <div className="text-[10px] text-gray-500 leading-relaxed bg-black/20 p-2 rounded border border-white/5 max-h-20 overflow-y-auto custom-scrollbar">
-                        <strong className="text-gray-400">Events:</strong> {user.events.map(e => e.title).join(", ")}
+                    <div className="text-[10px] text-gray-500 leading-relaxed bg-black/20 p-2 rounded border border-white/5 max-h-24 overflow-y-auto custom-scrollbar">
+                        <strong className="text-gray-400 block mb-1">Registered Events:</strong>
+                        <ul className="list-disc pl-3 space-y-1">
+                            {user.events.map((e, i) => (
+                                <li key={i}>{e.title}</li>
+                            ))}
+                        </ul>
                     </div>
                 )}
-                {isKare && (user.accommodation && user.paymentScreenshot !== "") && (
-                    <div className="relative group rounded-lg overflow-hidden h-24 border border-white/10 bg-black cursor-pointer mt-auto" onClick={() => onImageClick(user.paymentScreenshot)}>
-                        <img src={user.paymentScreenshot} alt="Proof" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
-                        <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
-                            <Eye size={16} className="text-white" />
-                            <span className="text-[10px] font-bold text-white uppercase">View Receipt</span>
-                        </div>
-                        <div className="absolute bottom-1 left-1 bg-black/80 px-1.5 py-0.5 rounded text-[8px] font-mono text-gray-400 truncate max-w-full">
-                            ID: {user.transactionId}
-                        </div>
-                    </div>
-                )}
-                {/* Payment Proof Section - Only for External/Paid */}
-                {!isKare && user.paymentScreenshot !== "" ? (
+
+                {/* Payment Proof Logic */}
+                {user.paymentScreenshot ? (
                     <div className="relative group rounded-lg overflow-hidden h-24 border border-white/10 bg-black cursor-pointer mt-auto" onClick={() => onImageClick(user.paymentScreenshot)}>
                         <img src={user.paymentScreenshot} alt="Proof" className="w-full h-full object-cover opacity-60 group-hover:opacity-100 transition-opacity" />
                         <div className="absolute inset-0 flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity bg-black/40 backdrop-blur-sm">
@@ -507,8 +520,14 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                         </div>
                     </div>
                 ) : (
-                    // Spacer for alignment if no image
-                    !isKare && user.paymentScreenshot === "" && <div className="h-24 bg-white/5 rounded-lg border border-white/5 flex items-center justify-center text-[10px] text-gray-600 uppercase font-bold">No Image Uploaded</div>
+                    !isKare && <div className="h-24 bg-white/5 rounded-lg border border-white/5 flex items-center justify-center text-[10px] text-gray-600 uppercase font-bold">No Image Uploaded</div>
+                )}
+                {/* KARE Specific - FEE WAIVED */}
+                {isKare && !user.paymentScreenshot && (
+                    <div className="h-24 bg-green-900/10 rounded-lg border border-green-500/10 flex flex-col items-center justify-center text-center p-2 mt-auto">
+                        <span className="text-lg font-black text-green-500 uppercase tracking-widest">FEE WAIVED</span>
+                        <span className="text-[9px] text-green-400/60 mt-1">Free Registration for KARE</span>
+                    </div>
                 )}
             </div>
 
@@ -529,7 +548,7 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                     ) : user.verified ? (
                         <span className="flex items-center justify-center gap-2"><CheckCircle size={14} /> Verified</span>
                     ) : (
-                        "Verify Payment"
+                        "Verify Registration"
                     )}
                 </button>
             </div>
@@ -548,7 +567,7 @@ const UserCard = ({ user, onVerify, onDelete, isProcessing, onImageClick }) => {
                         {isProcessing ? (
                             <span className="flex items-center justify-center gap-2"><Loader2 className="animate-spin" size={14} /> Processing...</span>
                         ) : (
-                            "Decline Payment"
+                            "Decline Registration"
                         )}
                     </button>
                 </div>
