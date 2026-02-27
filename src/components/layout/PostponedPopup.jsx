@@ -35,7 +35,7 @@ const PostponedPopup = () => {
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 text-red-500">
                     <Info className="h-6 w-6" />
-                    <h2 className="text-xl font-bold font-orbitron tracking-wider">IMPORTANT NOTICE</h2>
+                    <h2 className="text-xl font-bold font-orbitron tracking-wider">ANNOUNCEMENT</h2>
                   </div>
                   <button
                     onClick={() => setIsOpen(false)}
@@ -47,12 +47,10 @@ const PostponedPopup = () => {
 
                 <div className="mt-6 space-y-4">
                   <p className="text-lg font-medium leading-relaxed text-gray-200">
-                    Due to the sudden demise of our Hon’ble Chancellor, <span className="font-bold text-red-400">Dr. K. Sridharan</span>, SPARKZ 2K26 has been postponed as a mark of respect.
+                    Due to the sudden demise of our Hon’ble Chancellor, <span className="font-bold text-red-400">Dr. K. Sridharan</span>, SPARKZ 2K26 has been postponed to <span className="font-bold text-red-400">March 27-28, 2026</span>.
                   </p>
                   
-                  <p className="leading-relaxed text-gray-300">
-                    We offer our heartfelt prayers during this time of grief <span className="font-bold text-red-400">The revised dates will be announced shortly</span>
-                  </p>
+                  
                 </div>
 
                 <div className="mt-8 flex justify-end">

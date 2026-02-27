@@ -11,7 +11,7 @@ import {
 const userData = {
   name: 'Alex Johnson',
   email: 'alex.johnson@sparkz.edu',
-  memberSince: 'Feb 2026',
+  memberSince: 'March 2026',
   avatar: null, // Placeholder for avatar
   college: 'Kalasalingam Academy of Research and Education',
   department: 'Computer Science Engineering',
@@ -27,7 +27,7 @@ const registeredEvents = [
     id: 1,
     title: 'VALORANT',
     tagline: 'Online Tactical Esports Tournament',
-    date: 'Feb 27, 2026',
+    date: 'March 27, 2026',
     time: '10:00 AM',
     venue: 'Online',
     category: 'gaming',
@@ -39,7 +39,7 @@ const registeredEvents = [
     id: 2,
     title: 'CINEMATIC DANCE BATTLE',
     tagline: 'Show your moves on the big screen',
-    date: 'Feb 28, 2026',
+    date: 'March 28, 2026',
     time: '04:00 PM',
     venue: 'Main Stage',
     category: 'dance',
@@ -51,7 +51,7 @@ const registeredEvents = [
     id: 3,
     title: 'STAR STUDIO PRO SHOW',
     tagline: 'Featuring International Crews',
-    date: 'Feb 27, 2026',
+    date: 'March 27, 2026',
     time: '07:00 PM',
     venue: 'Open Air Theatre',
     category: 'music',
@@ -65,7 +65,7 @@ const registeredEvents = [
 const paymentHistory = [
   {
     id: 'PAY001',
-    date: 'Feb 20, 2026',
+    date: 'March 20, 2026',
     amount: 500,
     events: 'STAR STUDIO PRO SHOW',
     status: 'success',
@@ -73,7 +73,7 @@ const paymentHistory = [
   },
   {
     id: 'PAY002',
-    date: 'Feb 18, 2026',
+    date: 'March 18, 2026',
     amount: 300,
     events: 'VALORANT',
     status: 'success',
@@ -81,7 +81,7 @@ const paymentHistory = [
   },
   {
     id: 'PAY003',
-    date: 'Feb 15, 2026',
+    date: 'March 15, 2026',
     amount: 200,
     events: 'CINEMATIC DANCE BATTLE',
     status: 'success',

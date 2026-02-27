@@ -5,7 +5,7 @@ const ComingSoon = ({ isMobile }) => {
   const upcomingEvents = [
     { title: 'STAR WARS', date: 'DEC 2026', color: 'from-blue-600/20 to-purple-600/20' },
     { title: 'MARVEL UNIVERSE', date: 'JAN 2027', color: 'from-red-600/20 to-amber-600/20' },
-    { title: 'DC LEGENDS', date: 'FEB 2027', color: 'from-gray-600/20 to-slate-600/20' },
+    { title: 'DC LEGENDS', date: 'March 2027', color: 'from-gray-600/20 to-slate-600/20' },
     { title: 'ANIME FEST', date: 'MAR 2027', color: 'from-pink-600/20 to-rose-600/20' },
   ];
 
