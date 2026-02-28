@@ -220,7 +220,7 @@ const AboutSparkz = () => {
           {/* 4. Date Tag (Floating Bottom) */}
           <div className="mt-12 flex items-center gap-4 text-sm font-medium text-gray-400">
             <div className="h-px w-12 bg-gradient-to-r from-transparent to-gray-600"></div>
-            <span className="uppercase tracking-[0.2em]">Feb 27 & 28 • 2026</span>
+            <span className="uppercase tracking-[0.2em]">MAR 27 & 28 • 2026</span>
             <div className="h-px w-12 bg-gradient-to-l from-transparent to-gray-600"></div>
           </div>
 
