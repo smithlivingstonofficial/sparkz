@@ -1,0 +1,21 @@
+  {
+    "id": 0,
+    "title": "",
+    "tagline": "",
+    "category": "",
+    "day": "",
+    "date": "",
+    "time": "",
+    "venue": "",
+    "eventMode": "",
+    "posterColor": "",
+    "gradient": "",
+    "image": "/images/events/53.jpg",
+    "featured": false,
+    "seats": "",
+    "participants": "",
+    "description": "",
+    "club": "",
+    "eventCoordinators": [],
+    "rules": []
+  }
