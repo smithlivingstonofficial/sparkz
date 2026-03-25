@@ -175,7 +175,7 @@ const OnSpotPage = () => {
                 paymentScreenshot: "https://placehold.co/600x400/000000/FFF?text=OnSpot+Verified" 
             };
             
-            await axios.post(`${API}/user/event/normal`, bookingPayload);
+            await axios.post(`${API}/user/event/onspot`, bookingPayload);
 
             toast.success( `Payment Collected - User Verified!`, { duration: 4000 });
             handleReset();
