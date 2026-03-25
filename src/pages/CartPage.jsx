@@ -123,8 +123,6 @@ const CartPage = () => {
       return;
     }
     setIsUploading(true);
-    setTimeout(async () => {
-      setIsUploading(false);
       if (includeProShow) {
         cart.push({
           title: "Pro Show",
@@ -152,7 +150,7 @@ const CartPage = () => {
         totalAmount: totals.total
       }).then((res) => {
         console.log(res.data);
-        toast.success("Payment successful!");
+        toast.success("Payment successful! and event registerted");
         clearCart();
         setShowCheckoutForm(false);
       }).catch((err) => {
@@ -163,7 +161,6 @@ const CartPage = () => {
           toast.error("Payment failed!");
         }
       })
-    }, 2000);
   };
 
   return (
@@ -329,14 +326,17 @@ const CartPage = () => {
               {isKluStudent && totals.total === 0 && hasEvents ? (
                 <button
                   onClick={() => {
+                    setIsUploading(true)
                     axios.post(`${api}/user/event/normal`, {
                       user,
                       event: cart,
+                      totalAmount:0
                     }).then((res) => {
                       console.log(res.data);
                       toast.success("Booking successful!");
                       clearCart();
                       setShowCheckoutForm(false);
+                    checkout({ totalAmount: 0 })
                     }).catch((err) => {
                       console.log(err);
                       if (err.response.data.error) {
@@ -345,7 +345,6 @@ const CartPage = () => {
                         toast.error("Booking failed!");
                       }
                     })
-                    checkout({ totalAmount: 0 })
                   }}
                   className="w-full mt-8 py-5 bg-white text-black font-black uppercase tracking-[0.2em] text-xs rounded-2xl hover:bg-amber-500 transition-colors"
                 >
