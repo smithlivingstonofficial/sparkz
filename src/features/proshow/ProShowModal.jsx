@@ -55,7 +55,7 @@ const ProShowModal = ({ event, onClose, isMobile }) => {
     }
 
     try {
-      const response = await axios.post(`${import.meta.env.VITE_API_URL}/event/proshow`, {
+      const response = await axios.post(`${}/event/proshow`, {
         transactionId,
         paymentScreenshot: imgUrl,
         event,

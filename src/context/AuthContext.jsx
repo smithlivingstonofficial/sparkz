@@ -1,6 +1,7 @@
 
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import axios from 'axios';
+import { api } from '../api';
 
 const AuthContext = createContext(null);
 
@@ -21,7 +22,7 @@ export const AuthProvider = ({ children }) => {
     const login = async (email, password) => {
         try {
             console.log('Login attempt:', email, password);
-            const API_URL = import.meta.env.VITE_API_URL || 'https://sparkz-server.onrender.com';
+            const API_URL = api || 'https://sparkz-server-2ejn.onrender.com';
             const response = await axios.post(`${API_URL}/user/login`, { email, password });
 
             const userData = response.data;
@@ -41,7 +42,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (type, userData) => {
         try {
-            const API_URL = import.meta.env.VITE_API_URL || 'https://sparkz-server.onrender.com';
+            const API_URL = 'https://sparkz-server-2ejn.onrender.com';
             const endpoint = type === 'kare' ? '/user/kare' : '/user/external';
 
             const response = await axios.post(`${API_URL}${endpoint}`, userData);
@@ -77,7 +78,7 @@ export const AuthProvider = ({ children }) => {
     const googleLogin = async (email, name) => {
         try {
             console.log('Google Login attempt:', email, name);
-            const API_URL = import.meta.env.VITE_API_URL || 'https://sparkz-server.onrender.com';
+            const API_URL = i| 'https://sparkz-server-2ejn.onrender.com';
             // Using /user/kare endpoint as discussed in the plan
             const response = await axios.post(`${API_URL}/user/kare`, { email, name });
 

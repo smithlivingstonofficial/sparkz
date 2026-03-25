@@ -11,8 +11,8 @@ import toast, { Toaster } from 'react-hot-toast';
 // 1. Import event data directly from the JSON file
 import eventsData from '../assets/data/events.json';
 
-const API = import.meta.env.VITE_API_URL;
-
+import api from "../api"
+const API=api
 // Pricing Configuration
 const PRICES = {
     EVENT_REGISTRATION: 300,

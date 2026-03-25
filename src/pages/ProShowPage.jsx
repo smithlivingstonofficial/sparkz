@@ -256,7 +256,7 @@ const ProShowPage = () => {
     }
     setRegistering('vip');
     try {
-      const API_URL = import.meta.env.VITE_API_URL || 'https://sparkz-server.onrender.com';
+      const API_URL = https://sparkz-server-2ejn.onrender.com || 'https://sparkz-server-2ejn.onrender.com';
       await axios.post(`${API_URL}/user/event/proshow`, {
         transactionId,
         upiId,

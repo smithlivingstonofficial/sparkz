@@ -20,8 +20,8 @@ import {
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
 
-const API = import.meta.env.VITE_API_URL;
-
+import api from "../api"
+const API=api
 const AdminPage = () => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [password, setPassword] = useState("");

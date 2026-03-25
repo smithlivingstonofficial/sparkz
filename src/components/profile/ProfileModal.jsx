@@ -3,7 +3,7 @@ import React from 'react';
 import { X, QrCode, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-
+import api from ".../api"
 const ProfileModal = ({ isOpen, onClose }) => {
     const { user, logout } = useAuth();
 
@@ -11,7 +11,7 @@ const ProfileModal = ({ isOpen, onClose }) => {
 
     // Generate QR Code URL using the user ID
     // Data format expected by scanner: BACKEND_URL/user/<id> or similar unique identifier
-    const qrData = `${import.meta.env.VITE_API_URL || 'http://localhost:6500'}/user/${user._id}`;
+    const qrData = `${api}/user/${user._id}`;
     const qrCodeUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(qrData)}`;
 
     return (

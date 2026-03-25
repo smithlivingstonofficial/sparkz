@@ -19,7 +19,7 @@ const PRICES = {
   ACCOMMODATION: 400
 };
 // ===========================================
-const api = import.meta.env.VITE_API_URL;
+import api from "../api"
 const CartPage = () => {
   const {
     cart,

@@ -12,7 +12,7 @@ const ScannerPage = () => {
     const [error, setError] = useState(null);
     const scannerRef = useRef(null);
 
-    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:6500';
+    const API_URL = "https://sparkz-server-2ejn.onrender.com";
 
     useEffect(() => {
         // Initialize scanner only if not already scanned and not loading

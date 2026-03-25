@@ -1,0 +1,1 @@
+export  const api="https://sparkz-server-2ejn.onrender.com"
