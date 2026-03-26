@@ -163,9 +163,14 @@ const EventModal = ({ event, onClose }) => {
   icon={Trophy}
   label="Prize"
   value={event.featured ? (
-    <>1st Prize - 3000 <br /> 2nd Prize - 1500</>
+    <><p>1st Prize - 3000</p> <br /> <p>2nd Prize - 1500</p>
+      <p className=' border rounded-md opacity-52 text-red-400'>Prizes only for the external students.</p>
+    </>
   ) : (
-    <>1st Prize - 750 <br /> 2nd Prize - 500</>
+    <><p>1st Prize - 750 </p><br /> <p>2nd Prize - 500</p>
+            <p>Prizes only for the external students.</p>
+
+    </>
   )}
   highlight
 />

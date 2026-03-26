@@ -1,1 +1,3 @@
-export  const api="https://sparkz-server-2ejn.onrender.com"
+const api="https://sparkz-server-2ejn.onrender.com"
+
+export default api

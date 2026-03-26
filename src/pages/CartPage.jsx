@@ -19,7 +19,7 @@ const PRICES = {
   ACCOMMODATION: 400
 };
 // ===========================================
-import api from "../api"
+import api from "../api.js"
 const CartPage = () => {
   const {
     cart,

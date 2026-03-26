@@ -3,7 +3,7 @@ import React from 'react';
 import { X, QrCode, LogOut } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from ".../api"
+const api="https://sparkz-server.onrender.com"
 const ProfileModal = ({ isOpen, onClose }) => {
     const { user, logout } = useAuth();
 
