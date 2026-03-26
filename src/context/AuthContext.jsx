@@ -76,7 +76,7 @@ export const AuthProvider = ({ children }) => {
     const googleLogin = async (email, name) => {
         try {
             console.log('Google Login attempt:', email, name);
-            const API_URL = api | 'https://sparkz-server.onrender.com';
+            const API_URL = api || 'https://sparkz-server.onrender.com';
             // Using /user/kare endpoint as discussed in the plan
             const response = await axios.post(`${API_URL}/user/kare`, { email, name });
 
