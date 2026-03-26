@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import axios from 'axios';
 import { motion, AnimatePresence } from 'framer-motion';
-import { 
-    UserPlus, Search, CheckCircle, Loader2, 
-    Ticket, CreditCard, RefreshCw, Trash2, 
+import {
+    UserPlus, Search, CheckCircle, Loader2,
+    Ticket, CreditCard, RefreshCw, Trash2,
     ShoppingCart, LogOut, User, X, Lock, KeyRound
 } from 'lucide-react';
 import toast, { Toaster } from 'react-hot-toast';
@@ -12,7 +12,7 @@ import toast, { Toaster } from 'react-hot-toast';
 import eventsData from '../assets/data/events.json';
 
 import api from "../api"
-const API=api
+const API = api
 // Pricing Configuration
 const PRICES = {
     EVENT_REGISTRATION: 300,
@@ -31,22 +31,33 @@ const OnSpotPage = () => {
     // Data State
     const [allUsers, setAllUsers] = useState([]);
     const [loadingUsers, setLoadingUsers] = useState(false);
-    
+
     // Search & Selection State
     const [userSearchQuery, setUserSearchQuery] = useState("");
     const [selectedUser, setSelectedUser] = useState(null);
 
     // Event & Cart State
-    const [availableEvents, setAvailableEvents] = useState([]); 
+    const [availableEvents, setAvailableEvents] = useState([]);
     const [selectedEvents, setSelectedEvents] = useState([]);
     const [addons, setAddons] = useState({ proshow: false, accommodation: false });
     const [loadingEvents, setLoadingEvents] = useState(true);
     const [searchEvent, setSearchEvent] = useState("");
-    
+
     // Transaction State
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [showPaymentModal, setShowPaymentModal] = useState(false);
     const [confirmPassword, setConfirmPassword] = useState("");
+
+    // Create User State
+    const [showCreateUser, setShowCreateUser] = useState(false);
+    const [newUserData, setNewUserData] = useState({
+        name: "",
+        email: "",
+        phone: "",
+        college: "",
+        rollNo: ""
+    });
+    const [isCreatingUser, setIsCreatingUser] = useState(false);
 
     // --- Authentication & Initial Load ---
     useEffect(() => {
@@ -80,7 +91,7 @@ const OnSpotPage = () => {
 
     const handleLogin = (e) => {
         e.preventDefault();
-        if (password === "KARE-Desk") { 
+        if (password === "KARE-Desk") {
             setIsAuthenticated(true);
             sessionStorage.setItem("onspot_auth", "true");
             toast.success("Desk Access Granted");
@@ -98,19 +109,19 @@ const OnSpotPage = () => {
     const userSearchResults = useMemo(() => {
         if (!userSearchQuery || userSearchQuery.trim() === "") return [];
         const q = userSearchQuery.toLowerCase();
-        
+
         return allUsers.filter(u => {
             const name = u.name?.toLowerCase() || "";
             const email = u.email?.toLowerCase() || "";
             const phone = u.phone?.toString() || "";
             const college = u.collage?.toLowerCase() || "";
             const regNo = (u.registerNumber || u.regNo || "").toString().toLowerCase();
-            
-            return name.includes(q) || 
-                   email.includes(q) || 
-                   phone.includes(q) || 
-                   college.includes(q) ||
-                   regNo.includes(q);
+
+            return name.includes(q) ||
+                email.includes(q) ||
+                phone.includes(q) ||
+                college.includes(q) ||
+                regNo.includes(q);
         }).slice(0, 5); // Show top 5 results
     }, [allUsers, userSearchQuery]);
 
@@ -130,7 +141,7 @@ const OnSpotPage = () => {
 
     const handleEventToggle = (event) => {
         if (!selectedUser) return toast.error("Please search and select a user first");
-        
+
         if (selectedEvents.find(e => e.id === event.id)) {
             setSelectedEvents(prev => prev.filter(e => e.id !== event.id));
         } else {
@@ -145,7 +156,55 @@ const OnSpotPage = () => {
         setAddons({ proshow: false, accommodation: false });
         setShowPaymentModal(false);
         setConfirmPassword("");
+        setShowCreateUser(false);
+        setNewUserData({ name: "", email: "", phone: "", college: "", rollNo: "" });
         toast.success("System Ready");
+    };
+
+    const handleCreateUser = async (e) => {
+        e.preventDefault();
+
+        if (!newUserData.name || !newUserData.email || !newUserData.phone || !newUserData.rollNo) {
+            return toast.error("Please fill all required fields");
+        }
+
+        setIsCreatingUser(true);
+        try {
+            const isKare = newUserData.email.toLowerCase().includes("@klu.ac.in");
+            const type = isKare ? "kare" : "external";
+
+            const payload = {
+                name: newUserData.name,
+                email: newUserData.email,
+                phone: newUserData.phone,
+                collegeId: newUserData.rollNo,
+                password: newUserData.phone, // Default password
+                role: "user",
+                college: isKare ? "Kalasalingam Academy of Research and Education" : newUserData.college,
+                department: "N/A",
+                year: "N/A",
+                dob: "2000-01-01",
+                accommodation: false
+            };
+
+            const API_URL = 'https://sparkz-server.onrender.com';
+            const res = await axios.post(`${API_URL}/user/${type}`, payload);
+
+            if (res.data) {
+                toast.success("User Created Successfully");
+                const createdUser = res.data;
+                // Add to local state so they can be searched later
+                setAllUsers(prev => [...prev, createdUser]);
+                setSelectedUser(createdUser);
+                setShowCreateUser(false);
+                setUserSearchQuery("");
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error(err.response?.data?.message || "Failed to create user");
+        } finally {
+            setIsCreatingUser(false);
+        }
     };
 
     const initiatePayment = () => {
@@ -156,28 +215,28 @@ const OnSpotPage = () => {
 
     const handleConfirmPayment = async (e) => {
         e.preventDefault();
-        
+
         if (!confirmPassword) return toast.error("Enter confirmation password");
         if (confirmPassword !== PAYMENT_SECRET) {
-             return toast.error("Invalid Payment Password");
+            return toast.error("Invalid Payment Password");
         }
 
         setIsSubmitting(true);
         try {
             const bookingPayload = {
-                user: selectedUser, 
+                user: selectedUser,
                 event: selectedEvents,
                 proshow: addons.proshow,
                 accommodation: addons.accommodation,
                 transactionId: `SPOT-${Date.now()}`,
                 upiId: "CASH-ON-HAND",
                 totalAmount: calculateTotal(),
-                paymentScreenshot: "https://placehold.co/600x400/000000/FFF?text=OnSpot+Verified" 
+                paymentScreenshot: "https://placehold.co/600x400/000000/FFF?text=OnSpot+Verified"
             };
-            
+
             await axios.post(`${API}/user/event/onspot`, bookingPayload);
 
-            toast.success( `Payment Collected - User Verified!`, { duration: 4000 });
+            toast.success(`Payment Collected - User Verified!`, { duration: 4000 });
             handleReset();
         } catch (err) {
             console.error(err);
@@ -200,7 +259,7 @@ const OnSpotPage = () => {
                         <button type="submit" className="w-full bg-amber-600 hover:bg-amber-500 text-black font-bold py-3.5 rounded-xl transition-all">ENTER CONSOLE</button>
                     </form>
                 </div>
-                <Toaster position="bottom-center" toastOptions={{ style: { background: '#333', color: '#fff' }}} />
+                <Toaster position="bottom-center" toastOptions={{ style: { background: '#333', color: '#fff' } }} />
             </div>
         );
     }
@@ -209,7 +268,7 @@ const OnSpotPage = () => {
 
     return (
         <div className="min-h-screen bg-[#050505] text-white font-sans selection:bg-amber-500 selection:text-black">
-            <Toaster position="top-right" toastOptions={{ style: { background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' }}} />
+            <Toaster position="top-right" toastOptions={{ style: { background: '#1a1a1a', color: '#fff', border: '1px solid rgba(255,255,255,0.1)' } }} />
 
             {/* Header */}
             <header className="fixed top-0 inset-x-0 z-40 bg-[#0a0a0a]/90 backdrop-blur-md border-b border-white/5 px-6 py-4 flex justify-between items-center">
@@ -217,45 +276,45 @@ const OnSpotPage = () => {
                     <div className="w-10 h-10 bg-amber-600 rounded-lg flex items-center justify-center font-black text-black text-lg">R</div>
                     <div>
                         <h1 className="text-lg font-bold uppercase">On-Spot Desk</h1>
-                        <p className="text-[10px] text-green-500 font-mono flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full animate-pulse"/> LIVE SYSTEM</p>
+                        <p className="text-[10px] text-green-500 font-mono flex items-center gap-1"><span className="w-2 h-2 bg-green-500 rounded-full animate-pulse" /> LIVE SYSTEM</p>
                     </div>
                 </div>
                 <div className="flex items-center gap-4">
-                     <div className="text-right hidden md:block">
+                    <div className="text-right hidden md:block">
                         <p className="text-[10px] text-gray-500 uppercase font-bold">Loaded Users</p>
                         <p className="text-white font-mono">{allUsers.length}</p>
                     </div>
-                    <button onClick={handleLogout} className="p-2 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-colors"><LogOut size={20}/></button>
+                    <button onClick={handleLogout} className="p-2 hover:bg-red-500/10 hover:text-red-500 rounded-lg transition-colors"><LogOut size={20} /></button>
                 </div>
             </header>
 
             <main className="pt-24 pb-12 px-4 md:px-6 max-w-[1600px] mx-auto grid lg:grid-cols-12 gap-6 h-screen">
-                
+
                 {/* LEFT: User Search & Selection (4 Cols) */}
                 <div className="lg:col-span-4 flex flex-col gap-6 overflow-y-auto custom-scrollbar pb-20">
-                    
+
                     {/* SEARCH BOX / SELECTED USER CARD */}
                     <div className="bg-[#111] border border-white/10 rounded-2xl p-6 relative">
                         {!selectedUser ? (
                             <>
-                                <h2 className="text-xl font-bold text-amber-500 mb-6 flex items-center gap-2"><Search size={20}/> Find Attendee</h2>
+                                <h2 className="text-xl font-bold text-amber-500 mb-6 flex items-center gap-2"><Search size={20} /> Find Attendee</h2>
                                 <div className="space-y-4">
                                     <div className="relative">
-                                        <input 
+                                        <input
                                             autoFocus
                                             value={userSearchQuery}
                                             onChange={(e) => setUserSearchQuery(e.target.value)}
-                                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 pl-11 focus:border-amber-500 outline-none transition-colors" 
-                                            placeholder="Search Name, Email, Phone..." 
+                                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 pl-11 focus:border-amber-500 outline-none transition-colors"
+                                            placeholder="Search Name, Email, Phone..."
                                         />
-                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18}/>
+                                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500" size={18} />
                                     </div>
 
                                     {/* Search Results Dropdown */}
-                                    {userSearchQuery && (
+                                    {userSearchQuery && !showCreateUser && (
                                         <div className="flex flex-col gap-2 mt-2">
                                             {loadingUsers ? (
-                                                <div className="p-4 text-center"><Loader2 className="animate-spin inline"/></div>
+                                                <div className="p-4 text-center"><Loader2 className="animate-spin inline" /></div>
                                             ) : userSearchResults.length > 0 ? (
                                                 userSearchResults.map(user => (
                                                     <button
@@ -267,7 +326,7 @@ const OnSpotPage = () => {
                                                         className="flex items-center gap-3 p-3 rounded-lg bg-black/50 hover:bg-white/5 border border-white/5 text-left transition-all"
                                                     >
                                                         <div className="w-8 h-8 rounded-full bg-amber-600/20 text-amber-500 flex items-center justify-center font-bold">
-                                                            {user.name.charAt(0)}
+                                                            {user.name?.charAt(0) || '?'}
                                                         </div>
                                                         <div className="min-w-0">
                                                             <p className="text-sm font-bold text-gray-200 truncate">{user.name}</p>
@@ -276,10 +335,65 @@ const OnSpotPage = () => {
                                                     </button>
                                                 ))
                                             ) : (
-                                                <p className="text-xs text-center text-gray-500 py-2">No users found</p>
+                                                <div className="text-center py-4 bg-black/30 rounded-lg border border-white/5">
+                                                    <p className="text-sm text-gray-400 mb-3">No user found</p>
+                                                    <button
+                                                        onClick={() => {
+                                                            setShowCreateUser(true);
+                                                            setNewUserData(prev => ({ ...prev, name: userSearchQuery }));
+                                                        }}
+                                                        className="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-black text-xs font-bold rounded-lg transition-colors flex items-center justify-center gap-2 mx-auto"
+                                                    >
+                                                        <UserPlus size={14} /> CREATE NEW USER
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     )}
+
+                                    {/* Create User Form Section */}
+                                    {showCreateUser && (
+                                        <div className="mt-4 p-4 rounded-xl border border-amber-500/30 bg-amber-900/10">
+                                            <div className="flex justify-between items-center mb-4">
+                                                <h3 className="text-sm font-bold text-amber-500 flex items-center gap-2"><UserPlus size={16} /> Register New Attendee</h3>
+                                                <button onClick={() => setShowCreateUser(false)} className="text-gray-500 hover:text-white"><X size={16} /></button>
+                                            </div>
+                                            <form onSubmit={handleCreateUser} className="space-y-3">
+                                                <input
+                                                    type="text" required placeholder="Full Name"
+                                                    value={newUserData.name} onChange={e => setNewUserData({ ...newUserData, name: e.target.value })}
+                                                    className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-amber-500 outline-none"
+                                                />
+                                                <input
+                                                    type="email" required placeholder="Email Address"
+                                                    value={newUserData.email} onChange={e => setNewUserData({ ...newUserData, email: e.target.value })}
+                                                    className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-amber-500 outline-none"
+                                                />
+                                                <input
+                                                    type="tel" required placeholder="Phone Number"
+                                                    value={newUserData.phone} onChange={e => setNewUserData({ ...newUserData, phone: e.target.value })}
+                                                    className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-amber-500 outline-none"
+                                                />
+                                                <input
+                                                    type="text" required placeholder="Roll Number / Student ID"
+                                                    value={newUserData.rollNo} onChange={e => setNewUserData({ ...newUserData, rollNo: e.target.value })}
+                                                    className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-amber-500 outline-none"
+                                                />
+                                                <input
+                                                    type="text" placeholder="College Name (External Only)"
+                                                    value={newUserData.college} onChange={e => setNewUserData({ ...newUserData, college: e.target.value })}
+                                                    className="w-full bg-black border border-white/10 rounded-lg px-3 py-2 text-sm focus:border-amber-500 outline-none"
+                                                />
+                                                <button
+                                                    type="submit" disabled={isCreatingUser}
+                                                    className="w-full bg-amber-600 hover:bg-amber-500 text-black font-bold py-2.5 rounded-lg transition-all text-sm flex items-center justify-center disabled:opacity-50"
+                                                >
+                                                    {isCreatingUser ? <Loader2 className="animate-spin" size={16} /> : "CREATE & SELECT USER"}
+                                                </button>
+                                            </form>
+                                        </div>
+                                    )}
+
                                     <p className="text-[10px] text-gray-600 text-center pt-2">Database synced with Online Registrations</p>
                                 </div>
                             </>
@@ -287,10 +401,10 @@ const OnSpotPage = () => {
                             // SELECTED USER CARD
                             <div className="space-y-4">
                                 <div className="flex justify-between items-start">
-                                    <h2 className="text-xl font-bold text-green-500 flex items-center gap-2"><User size={20}/> Selected User</h2>
+                                    <h2 className="text-xl font-bold text-green-500 flex items-center gap-2"><User size={20} /> Selected User</h2>
                                     <button onClick={() => setSelectedUser(null)} className="text-xs bg-white/5 hover:bg-white/10 px-2 py-1 rounded text-gray-400">Change</button>
                                 </div>
-                                
+
                                 <div className="p-4 rounded-xl bg-amber-900/10 border border-amber-500/20 space-y-3">
                                     <div>
                                         <label className="text-[10px] text-gray-500 uppercase font-bold">Name</label>
@@ -320,17 +434,17 @@ const OnSpotPage = () => {
                     <div className={`bg-[#111] border border-white/10 rounded-2xl p-6 transition-opacity ${!selectedUser ? 'opacity-50 pointer-events-none' : ''}`}>
                         <h3 className="text-sm font-bold text-gray-400 uppercase mb-4">Upgrades</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <button 
+                            <button
                                 type="button"
-                                onClick={() => setAddons(p => ({...p, proshow: !p.proshow}))}
+                                onClick={() => setAddons(p => ({ ...p, proshow: !p.proshow }))}
                                 className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${addons.proshow ? 'bg-purple-900/30 border-purple-500 text-purple-300' : 'bg-black/40 border-white/10 text-gray-500 hover:border-white/30'}`}
                             >
                                 <span className="font-bold">Pro Show</span>
                                 <span className="text-xs">₹{PRICES.PRO_SHOW}</span>
                             </button>
-                            <button 
+                            <button
                                 type="button"
-                                onClick={() => setAddons(p => ({...p, accommodation: !p.accommodation}))}
+                                onClick={() => setAddons(p => ({ ...p, accommodation: !p.accommodation }))}
                                 className={`p-4 rounded-xl border flex flex-col items-center justify-center gap-2 transition-all ${addons.accommodation ? 'bg-blue-900/30 border-blue-500 text-blue-300' : 'bg-black/40 border-white/10 text-gray-500 hover:border-white/30'}`}
                             >
                                 <span className="font-bold">Stay</span>
@@ -343,29 +457,29 @@ const OnSpotPage = () => {
                 {/* MIDDLE: Event Selector (5 Cols) */}
                 <div className={`lg:col-span-5 bg-[#111] border border-white/10 rounded-2xl flex flex-col overflow-hidden max-h-full transition-opacity ${!selectedUser ? 'opacity-50 pointer-events-none' : ''}`}>
                     <div className="p-4 border-b border-white/10 bg-[#151515]">
-                        <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2"><Ticket size={18} className="text-amber-500"/> Select Events</h2>
+                        <h2 className="text-lg font-bold text-white mb-3 flex items-center gap-2"><Ticket size={18} className="text-amber-500" /> Select Events</h2>
                         <div className="relative">
                             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
-                            <input 
-                                value={searchEvent} 
-                                onChange={e => setSearchEvent(e.target.value)} 
-                                className="w-full bg-black border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm focus:border-amber-500 outline-none" 
-                                placeholder="Search events..." 
+                            <input
+                                value={searchEvent}
+                                onChange={e => setSearchEvent(e.target.value)}
+                                className="w-full bg-black border border-white/10 rounded-lg pl-9 pr-4 py-2 text-sm focus:border-amber-500 outline-none"
+                                placeholder="Search events..."
                             />
                         </div>
                     </div>
-                    
+
                     <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
                         {loadingEvents ? (
-                            <div className="flex justify-center p-10"><Loader2 className="animate-spin text-gray-600"/></div>
+                            <div className="flex justify-center p-10"><Loader2 className="animate-spin text-gray-600" /></div>
                         ) : filteredEvents.length === 0 ? (
                             <div className="text-center text-gray-500 py-10">No events found</div>
                         ) : (
                             filteredEvents.map(event => {
                                 const isSelected = selectedEvents.find(e => e.id === event.id);
                                 return (
-                                    <div 
-                                        key={event.id} 
+                                    <div
+                                        key={event.id}
                                         onClick={() => handleEventToggle(event)}
                                         className={`p-3 rounded-xl border cursor-pointer transition-all flex justify-between items-center group ${isSelected ? 'bg-amber-900/20 border-amber-500/50' : 'bg-black/20 border-white/5 hover:bg-white/5'}`}
                                     >
@@ -390,9 +504,9 @@ const OnSpotPage = () => {
                 <div className={`lg:col-span-3 flex flex-col gap-4 transition-opacity ${!selectedUser ? 'opacity-50' : ''}`}>
                     <div className="bg-[#151515] border border-white/10 rounded-2xl flex-1 flex flex-col overflow-hidden shadow-2xl">
                         <div className="p-4 border-b border-white/10 bg-black/40">
-                            <h2 className="text-lg font-bold text-white flex items-center gap-2"><ShoppingCart size={18}/> Cart Summary</h2>
+                            <h2 className="text-lg font-bold text-white flex items-center gap-2"><ShoppingCart size={18} /> Cart Summary</h2>
                         </div>
-                        
+
                         <div className="flex-1 overflow-y-auto p-4 space-y-3 custom-scrollbar">
                             {!selectedUser ? (
                                 <div className="text-center text-gray-600 py-10 text-xs">Select user to begin</div>
@@ -410,7 +524,7 @@ const OnSpotPage = () => {
                                     {selectedEvents.map(e => (
                                         <div key={e.id} className="flex justify-between items-center text-xs text-gray-300">
                                             <span className="truncate flex-1 pr-2">{e.title}</span>
-                                            <button onClick={() => handleEventToggle(e)} className="text-red-500 hover:bg-red-500/10 p-1 rounded"><Trash2 size={12}/></button>
+                                            <button onClick={() => handleEventToggle(e)} className="text-red-500 hover:bg-red-500/10 p-1 rounded"><Trash2 size={12} /></button>
                                         </div>
                                     ))}
 
@@ -436,12 +550,12 @@ const OnSpotPage = () => {
                                 <span className="text-gray-400 text-xs font-bold uppercase">Total Payable</span>
                                 <span className="text-3xl font-black text-amber-500 leading-none">₹{calculateTotal()}</span>
                             </div>
-                            
+
                             <div className="flex gap-2 mb-4">
                                 <button type="button" onClick={handleReset} className="px-4 py-3 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors">
-                                    <RefreshCw size={18} className="text-gray-400"/>
+                                    <RefreshCw size={18} className="text-gray-400" />
                                 </button>
-                                <button 
+                                <button
                                     onClick={initiatePayment}
                                     disabled={!selectedUser || isSubmitting}
                                     className="flex-1 bg-green-600 hover:bg-green-500 text-white font-bold rounded-xl flex items-center justify-center gap-2 transition-all shadow-lg shadow-green-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -460,20 +574,20 @@ const OnSpotPage = () => {
             {/* PAYMENT CONFIRMATION MODAL */}
             <AnimatePresence>
                 {showPaymentModal && (
-                    <motion.div 
-                        initial={{ opacity: 0 }} 
-                        animate={{ opacity: 1 }} 
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
                         className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4"
                     >
-                        <motion.div 
-                            initial={{ scale: 0.9, y: 20 }} 
-                            animate={{ scale: 1, y: 0 }} 
+                        <motion.div
+                            initial={{ scale: 0.9, y: 20 }}
+                            animate={{ scale: 1, y: 0 }}
                             exit={{ scale: 0.9, y: 20 }}
                             className="w-full max-w-md bg-[#181818] border border-white/10 rounded-2xl shadow-2xl p-6 relative"
                         >
-                            <button onClick={() => setShowPaymentModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white"><X size={20}/></button>
-                            
+                            <button onClick={() => setShowPaymentModal(false)} className="absolute top-4 right-4 text-gray-500 hover:text-white"><X size={20} /></button>
+
                             <div className="flex flex-col items-center mb-6">
                                 <div className="w-16 h-16 bg-amber-500/10 rounded-full flex items-center justify-center mb-4 text-amber-500">
                                     <Lock size={32} />
@@ -501,20 +615,20 @@ const OnSpotPage = () => {
                                 <div className="space-y-1">
                                     <label className="text-xs uppercase font-bold text-gray-500 ml-1">Desk Confirmation Password</label>
                                     <div className="relative">
-                                        <input 
+                                        <input
                                             autoFocus
-                                            type="password" 
+                                            type="password"
                                             value={confirmPassword}
                                             onChange={e => setConfirmPassword(e.target.value)}
-                                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 pl-10 focus:border-amber-500 outline-none transition-colors text-white" 
+                                            className="w-full bg-black border border-white/10 rounded-xl px-4 py-3 pl-10 focus:border-amber-500 outline-none transition-colors text-white"
                                             placeholder="Enter Payment Password"
                                         />
-                                        <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16}/>
+                                        <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                                     </div>
                                     <p className="text-[10px] text-gray-600 ml-1">Ask for Desk Key (Default: Payment@123)</p>
                                 </div>
-                                <button 
-                                    type="submit" 
+                                <button
+                                    type="submit"
                                     className="w-full bg-amber-600 hover:bg-amber-500 text-black font-bold py-3.5 rounded-xl transition-all"
                                 >
                                     VERIFY & SUBMIT
