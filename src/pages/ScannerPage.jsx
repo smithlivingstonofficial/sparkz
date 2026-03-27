@@ -178,18 +178,18 @@ const ScannerPage = () => {
                                             </div>
                                         )}
                                         <div className="col-span-1 sm:col-span-2 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
-                                            <div className="w-4 h-4 text-amber-500 flex-shrink-0">ID</div>
+                                            <div className="font-bold text-amber-500 flex-shrink-0">ID:</div>
                                             <span className="truncate">{userData._id?.$oid || userData._id}</span>
                                         </div>
                                         {userData.college && (
                                             <div className="col-span-1 sm:col-span-2 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
-                                                <div className="w-4 h-4 text-amber-500 flex-shrink-0">College</div>
+                                                <div className="font-bold text-amber-500 flex-shrink-0">College:</div>
                                                 <span>{userData.college}</span>
                                             </div>
                                         )}
                                         {userData.accommodation !== undefined && (
                                             <div className="col-span-1 sm:col-span-2 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
-                                                <div className="w-4 h-4 text-amber-500 flex-shrink-0">Accomm.</div>
+                                                <div className="font-bold text-amber-500 flex-shrink-0">Accommodation:</div>
                                                 <span className={userData.accommodation ? "text-green-400 font-bold" : "text-white/60"}>
                                                     {userData.accommodation ? "Yes (Required)" : "No"}
                                                 </span>
@@ -209,48 +209,65 @@ const ScannerPage = () => {
                         </div>
 
                         {/* Proshows Section */}
-                        {userData.proshow && userData.proshow.length > 0 && (
+                        {userData.proshow && (Array.isArray(userData.proshow) ? userData.proshow.length > 0 : Object.keys(userData.proshow).length > 0) && (
                             <div className="space-y-4">
-                                <h3 className="text-2xl font-bold text-white flex items-center gap-3">
-                                    <Crown className="w-6 h-6 text-amber-400" />
-                                    Proshow Passes
+                                <h3 className="text-2xl font-bold text-amber-400 flex items-center gap-3 animate-pulse">
+                                    <Crown className="w-8 h-8 text-amber-400" />
+                                    PROSHOW REGISTRATION
                                 </h3>
                                 <div className="grid gap-6">
-                                    {userData.proshow.map((show, index) => (
-                                        <div key={index} className="bg-gradient-to-r from-amber-900/20 to-black border border-amber-500/30 rounded-2xl p-6 relative overflow-hidden group hover:border-amber-500/50 transition-all">
+                                    {(Array.isArray(userData.proshow) ? userData.proshow : [userData.proshow]).map((show, index) => (
+                                        <div key={index} className="bg-gradient-to-r from-amber-600/20 via-amber-900/40 to-black border-2 border-amber-500 rounded-2xl p-6 relative overflow-hidden group hover:border-amber-400 shadow-[0_0_20px_rgba(245,158,11,0.2)] transition-all">
+                                            {/* Decorative Background Effects */}
+                                            <div className="absolute top-0 right-0 -mt-8 -mr-8 w-32 h-32 bg-amber-500/30 rounded-full blur-3xl pointer-events-none"></div>
+                                            <div className="absolute bottom-0 left-0 -mb-8 -ml-8 w-32 h-32 bg-amber-600/20 rounded-full blur-3xl pointer-events-none"></div>
+
                                             <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
                                                 <div>
-                                                    <div className="flex items-center gap-3 mb-2">
-                                                        <span className="px-3 py-1 bg-amber-500 text-black text-xs font-bold rounded-full">
-                                                            {show.type} PASS
+                                                    <div className="flex items-center gap-3 mb-3">
+                                                        <span className="px-4 py-1.5 bg-amber-500 text-black text-sm font-extrabold tracking-wider rounded-full shadow-lg shadow-amber-500/40">
+                                                            {show.type ? `${show.type} PASS` : 'VIP ACCESS'}
                                                         </span>
-                                                        <span className="text-amber-400 font-bold text-lg">₹{show.price || '500'}</span>
+                                                        <span className="text-amber-400 font-bold text-xl">₹{show.price || 'PAID'}</span>
                                                     </div>
-                                                    <h4 className="text-xl font-bold text-white mb-2">{show.name || 'Proshow Event'}</h4>
+                                                    <h4 className="text-2xl font-black text-white mb-3 uppercase tracking-wide">
+                                                        {show.name || 'Sparkz Elite Proshow'}
+                                                    </h4>
 
-                                                    <div className="flex flex-wrap gap-4 text-sm text-white/60">
-                                                        <div className="flex items-center gap-2">
-                                                            <CreditCard className="w-4 h-4" />
-                                                            <span className="font-mono">{show.transactionId || 'N/A'}</span>
-                                                        </div>
-                                                        {show.upiId && (
+                                                    <div className="flex flex-wrap gap-4 text-sm text-amber-100/80 bg-black/50 p-3 rounded-xl border border-amber-500/30 shadow-inner">
+                                                        {(show.transactionId || show.upiId) ? (
+                                                            <>
+                                                                {show.transactionId && (
+                                                                    <div className="flex items-center gap-2">
+                                                                        <CreditCard className="w-4 h-4 text-amber-400" />
+                                                                        <span className="font-mono">{show.transactionId}</span>
+                                                                    </div>
+                                                                )}
+                                                                {show.upiId && (
+                                                                    <div className="flex items-center gap-2 border-l border-amber-500/30 pl-4">
+                                                                        <span className="font-bold text-amber-500">UPI:</span>
+                                                                        <span className="font-mono">{show.upiId}</span>
+                                                                    </div>
+                                                                )}
+                                                            </>
+                                                        ) : (
                                                             <div className="flex items-center gap-2">
-                                                                <span className="font-bold text-amber-500/50">UPI:</span>
-                                                                <span className="font-mono">{show.upiId}</span>
+                                                                <CheckCircle className="w-4 h-4 text-green-400" />
+                                                                <span className="text-green-400 font-medium">Verified Payment</span>
                                                             </div>
                                                         )}
                                                     </div>
                                                 </div>
 
                                                 {show.paymentScreenshot && (
-                                                    <div className="flex-shrink-0">
+                                                    <div className="flex-shrink-0 mt-4 md:mt-0">
                                                         <a
                                                             href={show.paymentScreenshot}
                                                             target="_blank"
                                                             rel="noopener noreferrer"
-                                                            className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-amber-400 transition-colors"
+                                                            className="flex items-center gap-2 px-6 py-3 bg-amber-500 hover:bg-amber-400 text-black font-bold uppercase tracking-wider rounded-xl shadow-lg shadow-amber-500/20 transition-all transform hover:scale-105"
                                                         >
-                                                            <ImageIcon className="w-4 h-4" />
+                                                            <ImageIcon className="w-5 h-5" />
                                                             View Proof
                                                         </a>
                                                     </div>

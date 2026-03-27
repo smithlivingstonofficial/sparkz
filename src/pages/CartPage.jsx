@@ -118,6 +118,7 @@ const CartPage = () => {
 
   const handleSubmitPayment = async (e) => {
     e.preventDefault();
+    setFormError('');
     if (!transactionId.trim() || !paymentScreenshot) {
       setFormError('Transaction ID and Screenshot are required');
       return;
@@ -426,18 +427,17 @@ const CartPage = () => {
                   <div>
                     <label className="text-[10px] font-black uppercase text-gray-500 ml-1">Upload Receipt*</label>
                     <div
-                      onClick={() => fileInputRef.current.click()}
+                      onClick={handleFileUpload}
                       className="mt-1 group border-2 border-dashed border-white/10 rounded-2xl p-6 text-center cursor-pointer hover:border-amber-500/50 transition-all bg-white/5"
                     >
                       {paymentScreenshot ? (
-                        <img src={paymentScreenshot} alt="Receipt" className="h-32 mx-auto rounded-lg" />
+                        <img src={paymentScreenshot} alt="Receipt" className="h-32 mx-auto rounded-lg object-contain" />
                       ) : (
                         <div className="flex flex-col items-center gap-2">
                           <Upload className="text-gray-600 group-hover:text-amber-500 transition-colors" />
                           <span className="text-xs text-gray-500">Tap to upload screenshot</span>
                         </div>
                       )}
-                      <button ref={fileInputRef} onClick={handleFileUpload} ></button>
                     </div>
                   </div>
                 </div>
