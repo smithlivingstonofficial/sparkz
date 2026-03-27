@@ -12,7 +12,7 @@ const ScannerPage = () => {
     const [error, setError] = useState(null);
     const scannerRef = useRef(null);
 
-    const API_URL = "https://sparkz-server-2ejn.onrender.com";
+    const API_URL = "https://sparkz-server.onrender.com";
 
     useEffect(() => {
         // Initialize scanner only if not already scanned and not loading
@@ -151,29 +151,50 @@ const ScannerPage = () => {
 
                             <div className="relative z-10 grid md:grid-cols-2 gap-8 items-center">
                                 <div>
-                                    <div className="inline-block px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold tracking-wider mb-4 border border-amber-500/20">
-                                        VERIFIED ATTENDEE
+                                    <div className="flex flex-wrap gap-2 mb-4">
+                                        <div className="inline-block px-3 py-1 bg-amber-500/20 text-amber-400 rounded-full text-xs font-bold tracking-wider border border-amber-500/20">
+                                            VERIFIED ATTENDEE
+                                        </div>
+                                        {userData.email?.endsWith('@klu.ac.in') && (
+                                            <div className="inline-block px-3 py-1 bg-blue-500/20 text-blue-400 rounded-full text-xs font-bold tracking-wider border border-blue-500/20">
+                                                KARE STUDENT
+                                            </div>
+                                        )}
                                     </div>
                                     <h2 className="text-3xl font-bold text-white mb-2">{userData.name}</h2>
                                     <p className="text-white/60 text-lg mb-6">{userData.email}</p>
 
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                                        <div className="flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
-                                            <Smartphone className="w-4 h-4 text-amber-500" />
-                                            <span>{userData.phone}</span>
-                                        </div>
-                                        <div className="flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
-                                            <User className="w-4 h-4 text-amber-500" />
-                                            <span>{userData.role?.toUpperCase()}</span>
-                                        </div>
+                                        {userData.phone && (
+                                            <div className="flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
+                                                <Smartphone className="w-4 h-4 text-amber-500" />
+                                                <span>{userData.phone}</span>
+                                            </div>
+                                        )}
+                                        {userData.role && (
+                                            <div className="flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
+                                                <User className="w-4 h-4 text-amber-500" />
+                                                <span>{userData.role.toUpperCase()}</span>
+                                            </div>
+                                        )}
                                         <div className="col-span-1 sm:col-span-2 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
                                             <div className="w-4 h-4 text-amber-500 flex-shrink-0">ID</div>
-                                            <span className="truncate">{userData._id}</span>
+                                            <span className="truncate">{userData._id?.$oid || userData._id}</span>
                                         </div>
-                                        <div className="col-span-1 sm:col-span-2 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
-                                            <div className="w-4 h-4 text-amber-500 flex-shrink-0">College</div>
-                                            <span>{userData.college}</span>
-                                        </div>
+                                        {userData.college && (
+                                            <div className="col-span-1 sm:col-span-2 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
+                                                <div className="w-4 h-4 text-amber-500 flex-shrink-0">College</div>
+                                                <span>{userData.college}</span>
+                                            </div>
+                                        )}
+                                        {userData.accommodation !== undefined && (
+                                            <div className="col-span-1 sm:col-span-2 flex items-center gap-3 text-white/80 bg-white/5 p-3 rounded-lg">
+                                                <div className="w-4 h-4 text-amber-500 flex-shrink-0">Accomm.</div>
+                                                <span className={userData.accommodation ? "text-green-400 font-bold" : "text-white/60"}>
+                                                    {userData.accommodation ? "Yes (Required)" : "No"}
+                                                </span>
+                                            </div>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-center justify-center">
@@ -237,6 +258,49 @@ const ScannerPage = () => {
                                             </div>
                                         </div>
                                     ))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Global Payment Details */}
+                        {(userData.transactionId || userData.paymentScreenshot || userData.upiId) && (
+                            <div className="space-y-4">
+                                <h3 className="text-2xl font-bold text-white flex items-center gap-3">
+                                    <CreditCard className="w-6 h-6 text-green-400" />
+                                    Payment Details
+                                </h3>
+                                <div className="bg-gradient-to-r from-green-900/20 to-black border border-green-500/30 rounded-2xl p-6 relative overflow-hidden group hover:border-green-500/50 transition-all">
+                                    <div className="relative z-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                                        <div>
+                                            <div className="flex flex-wrap gap-4 text-sm text-white/80">
+                                                {userData.transactionId && (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-green-500/80">TXN:</span>
+                                                        <span className="font-mono">{userData.transactionId}</span>
+                                                    </div>
+                                                )}
+                                                {userData.upiId && (
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-bold text-green-500/80">UPI:</span>
+                                                        <span className="font-mono">{userData.upiId}</span>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                        {userData.paymentScreenshot && (
+                                            <div className="flex-shrink-0">
+                                                <a
+                                                    href={userData.paymentScreenshot}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg text-sm text-green-400 transition-colors"
+                                                >
+                                                    <ImageIcon className="w-4 h-4" />
+                                                    View Proof
+                                                </a>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         )}
